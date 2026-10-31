@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f5d5b">
-  <meta name="description" content="同一間教室，不同的學習感受。從四位學生的座位重新觀看一堂課，思考融合教育的調整策略。">
+  <meta name="theme-color" content="#153f46">
+  <meta name="description" content="一堂國語課，四種不同的學習處境。走進教室，從學生的座位重新思考融合教育的班級經營與教學調整。">
   <title>換個位置，看見學習｜融合教育沉浸式教室</title>
   <link rel="stylesheet" href="./assets/style.css">
   <script src="./config.js"></script>
@@ -12,264 +12,117 @@
 </head>
 <body>
   <a class="skip-link" href="#main">跳至主要內容</a>
-  <div class="ambient ambient-a"></div>
-  <div class="ambient ambient-b"></div>
-
-  <header class="site-header glass">
-    <a class="brand" href="./index.html" aria-label="回到首頁">
-      <span class="brand-badge">學</span>
-      <span>
-        <strong>換個位置，看見學習</strong>
-        <small>融合教育沉浸式教室</small>
-      </span>
+  <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="回到換個位置，看見學習首頁">
+      <span class="brand-mark" aria-hidden="true"><span class="brand-door"></span></span>
+      <span><strong>換個位置，看見學習</strong><small>融合教育沉浸式教室</small></span>
     </a>
-    <nav class="top-nav" aria-label="主要選單">
-      <a class="active" href="./index.html">進入體驗</a>
-      <a href="./wall.html">回應交流牆</a>
+    <nav class="header-links" aria-label="主要選單">
+      <a class="header-link is-current" href="./index.html">進入教室</a>
+      <a class="header-link" href="./wall.html">回應交流牆 <span aria-hidden="true">↗</span></a>
     </nav>
   </header>
 
   <main id="main">
-    <section id="welcomeView" class="view hero-view">
-      <div class="hero-copy">
-        <p class="eyebrow"><span></span> 一堂國語課・四個不同的學習位置</p>
-        <h1>同一間教室，<em>真的每個人都看見一樣的課嗎？</em></h1>
-        <p class="lead">體驗一堂正在閱讀〈鏡頭下的家鄉〉的國語課。你可以選擇四位學生其中一位，依序經歷<strong>讀課文</strong>、<strong>畫重點</strong>、<strong>回答選擇題</strong>三項活動，感受他在課堂中可能面臨的障礙，並思考老師可以怎麼調整教學與班級經營。</p>
-
-        <div class="hero-flow">
-          <div><b>01</b><span>走進教室</span></div>
-          <i></i>
-          <div><b>02</b><span>體驗學習阻礙</span></div>
-          <i></i>
-          <div><b>03</b><span>提出調整策略</span></div>
+    <section id="welcomeView" class="view welcome" aria-labelledby="welcomeTitle">
+      <div class="welcome-copy">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> 一堂國語課 · 四種學習處境</p>
+        <h1 id="welcomeTitle">同一間教室，<br><em>不一樣的學習視角。</em></h1>
+        <p class="lead">走進一間正在上〈鏡頭下的家鄉〉的教室。選擇一位學生，依序參與朗讀、畫重點與選擇題，從課堂情境重新思考：老師可以改變什麼？</p>
+        <div class="journey-trail" aria-label="體驗流程">
+          <span><b>01</b> 走進教室</span><i></i><span><b>02</b> 體驗三項活動</span><i></i><span><b>03</b> 交流調整策略</span>
         </div>
-
-        <form id="startForm" class="start-card glass">
-          <label for="participantName">請先輸入姓名或暱稱</label>
-          <div class="start-row">
-            <input id="participantName" name="participantName" maxlength="24" required placeholder="例如：彥融老師 / 第三組" autocomplete="nickname">
-            <button class="btn btn-primary" type="submit">開始體驗</button>
+        <form id="startForm" class="start-form">
+          <label for="participantName">你的姓名或暱稱 <span class="subtle-text">（公開分享時將顯示）</span></label>
+          <div class="start-form-row">
+            <input id="participantName" name="participantName" maxlength="24" minlength="1" required autocomplete="nickname" placeholder="例如：彥融老師、第三組小組" spellcheck="false">
+            <button class="primary-btn" type="submit">開始體驗 <span aria-hidden="true">→</span></button>
           </div>
-          <p class="helper">建議使用暱稱。課後反思會送交主持教師，只有同意公開的內容才會顯示在交流牆。</p>
+          <p class="privacy-hint">體驗時可自行開啟教室環境聲；聲音與動態效果都可選擇關閉。建議使用暱稱，勿填寫學生姓名或敏感個資。課後反思都會送交主持教師；只有同意公開的內容才會出現在交流牆。</p>
         </form>
-
         <p class="designer-credit">網頁設計者：<strong>國教院黃彥融副研究員</strong></p>
       </div>
-
-      <div class="hero-scene glass" aria-hidden="true">
-        <div class="scene-header">
-          <span>國語課 10:25 AM</span>
-          <span class="live-pill"><i></i> 正在上課</span>
+      <div class="welcome-preview" aria-hidden="true">
+        <div class="preview-top"><span>CLASSROOM / 10:25 AM</span><span class="preview-live"><i></i> 國語課進行中</span></div>
+        <div class="preview-board"><span>國語 · 閱讀理解</span><strong>鏡頭下的家鄉</strong><p>這裡的十一月，陽光照耀滿園柳丁的景象，如金粉從天上落下般美麗……</p></div>
+        <div class="preview-seats">
+          <div class="preview-seat"><span class="avatar-circle amber">晴</span><span>小晴</span><small>弱視</small></div>
+          <div class="preview-seat"><span class="avatar-circle blue">廷</span><span>小廷</span><small>輕度聽損</small></div>
+          <div class="preview-seat"><span class="avatar-circle coral">宇</span><span>小宇</span><small>注意力調節</small></div>
+          <div class="preview-seat"><span class="avatar-circle purple">禾</span><span>小禾</span><small>閱讀理解</small></div>
         </div>
-        <div class="board-hero">
-          <small>本節課文</small>
-          <strong>鏡頭下的家鄉</strong>
-          <p>這裡的十一月，陽光照耀滿園柳丁的景象，如金粉從天上落下般美麗……</p>
-        </div>
-        <div class="seats-grid">
-          <article><span class="chip amber">晴</span><b>小晴</b><small>弱視</small></article>
-          <article><span class="chip blue">廷</span><b>小廷</b><small>輕度聽損</small></article>
-          <article><span class="chip coral">宇</span><b>小宇</b><small>ADHD</small></article>
-          <article><span class="chip purple">禾</span><b>小禾</b><small>閱讀理解困難</small></article>
-        </div>
-        <div class="immersive-note">從學生的位置，重新理解一堂看似平常的課。</div>
+        <div class="preview-foot"><span class="preview-pulse"></span><span>以學生的座位，重新觀看一堂課</span><span>↗</span></div>
       </div>
-      <div class="foot-caveat">本體驗是教學情境模擬，用來協助教師討論課堂參與障礙與支持策略，並不代表所有學生都會有相同經驗。</div>
+      <div class="intro-caveat">關於這項體驗｜這是用來討論環境障礙與教師支持的教學情境，不是障礙診斷工具，也不代表所有相同障礙學生的經驗。</div>
     </section>
 
-    <section id="classroomView" class="view" hidden>
-      <div class="section-head">
-        <div>
-          <p class="eyebrow"><span></span> STEP 01 / ENTER THE ROOM</p>
-          <h2>請走進教室，選擇一個座位。</h2>
-          <p>使用方向鍵、WASD 或下方按鈕移動；靠近座位後按 Enter，或直接點擊座位。</p>
-        </div>
-        <div class="participant-tag" id="participantChip"></div>
+    <section id="classroomView" class="view class-view" aria-labelledby="classroomTitle" hidden>
+      <div class="section-heading">
+        <div><p class="eyebrow">STEP 01 / ENTER THE ROOM</p><h1 id="classroomTitle">歡迎走進五年級國語課。</h1><p>用方向鍵、WASD 或下方按鈕移動，靠近學生後按 Enter；也可以直接點擊座位選擇。</p></div>
+        <span class="participant-chip" id="participantChip"></span>
       </div>
-
-      <div class="classroom-layout">
-        <div class="classroom-card glass">
-          <div class="class-topbar">
-            <span>五年甲班・國語</span>
-            <span>閱讀理解 × 劃重點 × 選擇題</span>
+      <div class="room-layout">
+        <div class="classroom-card">
+          <div class="room-topline"><span>5年甲班 · 國語課</span><span>10:25 <span class="tiny-dot"></span> 正在上課</span></div>
+          <div id="classroomMap" class="classroom-map" tabindex="0" role="group" aria-label="教室平面互動區。可用方向鍵移動角色，Enter 選擇附近學生；或直接使用學生座位按鈕。">
+            <div class="map-window">窗　窗　窗　窗</div>
+            <div class="room-blackboard"><small>今天的課文</small><strong>鏡頭下的家鄉</strong><small>觀察描寫 · 找出重點 · 理解比喻</small></div>
+            <div class="teacher-spot"><span>👩🏻‍🏫</span><small>國語老師</small></div>
+            <div class="map-door">入口 <span>↥</span></div>
+            <button type="button" class="student-desk" data-student="vision" style="--x:29%;--y:49%;" aria-label="選擇小晴，弱視學生"><span class="student-desk-top"><span class="seat-avatar amber">晴</span><span class="desk-book"></span></span><strong>小晴</strong><small>弱視</small></button>
+            <button type="button" class="student-desk" data-student="hearing" style="--x:70%;--y:49%;" aria-label="選擇小廷，輕度聽損學生"><span class="student-desk-top"><span class="seat-avatar blue">廷</span><span class="desk-book"></span></span><strong>小廷</strong><small>輕度聽損</small></button>
+            <button type="button" class="student-desk" data-student="adhd" style="--x:29%;--y:76%;" aria-label="選擇小宇，注意力調節困難（ADHD）學生"><span class="student-desk-top"><span class="seat-avatar coral">宇</span><span class="desk-book"></span></span><strong>小宇</strong><small>注意力調節</small></button>
+            <button type="button" class="student-desk" data-student="reading" style="--x:70%;--y:76%;" aria-label="選擇小禾，閱讀理解困難學生"><span class="student-desk-top"><span class="seat-avatar purple">禾</span><span class="desk-book"></span></span><strong>小禾</strong><small>閱讀理解</small></button>
+            <div id="playerAvatar" class="player-avatar" style="left:50%;top:93%" aria-hidden="true"><span>我</span><i></i></div>
           </div>
-          <div id="classroomMap" class="classroom-map" tabindex="0" aria-label="教室平面圖">
-            <div class="window-strip">窗　窗　窗　窗　窗</div>
-            <div class="blackboard">
-              <small>今日課文</small>
-              <strong>鏡頭下的家鄉</strong>
-              <p>觀察描寫／找出重點／理解內容</p>
-            </div>
-            <div class="teacher-spot">👩🏻‍🏫<small>老師</small></div>
-            <div class="door-mark">入口</div>
-
-            <button class="desk" data-student="vision" style="--x:28%;--y:51%"><span class="chip amber">晴</span><b>小晴</b><small>弱視</small></button>
-            <button class="desk" data-student="hearing" style="--x:72%;--y:51%"><span class="chip blue">廷</span><b>小廷</b><small>輕度聽損</small></button>
-            <button class="desk" data-student="adhd" style="--x:28%;--y:77%"><span class="chip coral">宇</span><b>小宇</b><small>ADHD</small></button>
-            <button class="desk" data-student="reading" style="--x:72%;--y:77%"><span class="chip purple">禾</span><b>小禾</b><small>閱讀理解困難</small></button>
-            <div id="player" class="player">我</div>
-          </div>
-          <div class="map-footer">
-            <p id="mapStatus">你站在教室門口，準備開始這堂課。</p>
-            <div class="move-pad">
-              <button data-move="0,-1">↑</button>
-              <div>
-                <button data-move="-1,0">←</button>
-                <button id="chooseNearBtn">選擇</button>
-                <button data-move="1,0">→</button>
-              </div>
-              <button data-move="0,1">↓</button>
-            </div>
-          </div>
+          <div class="map-bottom"><span id="mapStatus" aria-live="polite">你站在教室入口。試著走向一張座位。</span><div class="direction-controls" aria-label="角色移動控制"><button type="button" data-move="0,-1" aria-label="向上移動">↑</button><div><button type="button" data-move="-1,0" aria-label="向左移動">←</button><button type="button" id="chooseNearBtn" aria-label="選擇靠近的學生">選擇</button><button type="button" data-move="1,0" aria-label="向右移動">→</button></div><button type="button" data-move="0,1" aria-label="向下移動">↓</button></div></div>
         </div>
-
-        <aside class="pick-panel glass">
-          <p class="eyebrow"><span></span> 你要從誰的角度出發？</p>
-          <div class="pick-list" id="pickList">
-            <button data-student="vision"><span class="chip amber">晴</span><div><b>小晴</b><small>弱視：看不清黑板與小字</small></div><i>↗</i></button>
-            <button data-student="hearing"><span class="chip blue">廷</span><div><b>小廷</b><small>輕度聽損：口語訊息容易漏接</small></div><i>↗</i></button>
-            <button data-student="adhd"><span class="chip coral">宇</span><div><b>小宇</b><small>ADHD：注意力易被干擾帶走</small></div><i>↗</i></button>
-            <button data-student="reading"><span class="chip purple">禾</span><div><b>小禾</b><small>閱讀理解困難：閱讀與理解負荷較高</small></div><i>↗</i></button>
+        <aside class="side-guide">
+          <p class="eyebrow">CHOOSE A PERSPECTIVE</p><h2>今天你想坐在哪裡？</h2><p>四位學生都在讀同一篇課文，但參與這堂課時，可能遇到不同障礙。</p>
+          <div class="role-picks" id="rolePicks">
+            <button type="button" data-student="vision"><span class="avatar-circle amber">晴</span><span><b>小晴</b><small>弱視 · 看不清板書與小字</small></span><span>↗</span></button>
+            <button type="button" data-student="hearing"><span class="avatar-circle blue">廷</span><span><b>小廷</b><small>輕度聽損 · 口語訊息易漏接</small></span><span>↗</span></button>
+            <button type="button" data-student="adhd"><span class="avatar-circle coral">宇</span><span><b>小宇</b><small>ADHD · 課堂干擾與注意力轉移</small></span><span>↗</span></button>
+            <button type="button" data-student="reading"><span class="avatar-circle purple">禾</span><span><b>小禾</b><small>閱讀理解困難 · 文字與語意處理</small></span><span>↗</span></button>
           </div>
-          <p class="pick-note">提醒：這裡呈現的是教室中的一種可能情境，不是學生能力的全部，也不是所有學生都一定如此。</p>
+          <p class="guide-note">每個人的狀況都具有個別差異；這裡以四個具體教室情境，引導討論可調整的環境與教學做法。</p>
         </aside>
       </div>
     </section>
 
-    <section id="lessonView" class="view" hidden>
-      <div class="lesson-topbar">
-        <button id="backToClass" class="btn btn-ghost">← 返回教室</button>
-        <div class="lesson-meta"><span id="studentTag"></span><span id="stageContext">國語課</span></div>
-        <button id="motionToggle" class="btn btn-ghost">減少特效</button>
+    <section id="lessonView" class="view lesson-view" aria-labelledby="lessonTitle" hidden>
+      <div class="lesson-top">
+        <div class="lesson-meta"><button id="backToClass" class="text-btn" type="button">← 返回教室</button><span class="meta-divider">/</span><span id="studentTag" class="small-tag"></span></div>
+        <button id="motionToggle" type="button" class="subtle-btn" aria-pressed="false">減少視覺模擬特效</button>
       </div>
-
-      <div class="lesson-head">
-        <div>
-          <p class="eyebrow"><span></span> STEP 02 / EXPERIENCE</p>
-          <h2 id="lessonTitle">讀課文</h2>
-          <p id="lessonSubtitle">請感受你目前坐在這個位置上，面對這個任務時發生了什麼事。</p>
-        </div>
-        <div class="progress-rail" id="progressRail"></div>
-      </div>
-
-      <div class="lesson-layout">
-        <section class="stage-card glass">
-          <div class="scene-strip">
-            <span class="scene-live"><i></i> 課堂進行中</span>
-            <span id="sceneTime">10:25</span>
+      <div class="lesson-heading"><div><p class="eyebrow" id="lessonStepLabel">STEP 02 / EXPERIENCE</p><h1 id="lessonTitle">跟著老師朗讀</h1><p id="lessonSubtitle">同一項學習任務，坐在不同位置有什麼差異？</p></div><div class="lesson-progress" aria-label="三個課堂活動"><span class="progress-node active" data-progress="0">1 <small>朗讀</small></span><span class="progress-line"></span><span class="progress-node" data-progress="1">2 <small>畫重點</small></span><span class="progress-line"></span><span class="progress-node" data-progress="2">3 <small>選擇題</small></span></div></div>
+      <div class="learning-layout">
+        <div class="stage-main">
+          <div class="stage-scene-bar"><span class="scene-clock"><span></span> 課堂進行中</span><span id="stageContext">國語課 · 朗讀課文</span><span id="stageClock">10:25</span></div>
+          <div class="stage-scene" id="stageScene"><div id="perspectiveBanner" class="perspective-banner" aria-live="polite">學生視角 · 課堂正在進行</div><div id="sceneEvent" class="scene-event" hidden></div>
+            <div class="board-view" id="boardView"><div class="board-label">黑板上的課文</div><div class="board-copy"><strong>鏡頭下的家鄉</strong><p>這裡的十一月，陽光照耀滿園柳丁的景象，如金粉從天上落下般美麗。</p></div><span class="board-chalk" aria-hidden="true">＿＿＿＿</span></div>
+            <div class="teacher-bubble"><span class="teacher-portrait" aria-hidden="true">師</span><div><div class="bubble-heading"><strong>老師說</strong><span id="teacherOrientation">站在講台前</span></div><p id="teacherCaption" aria-live="polite"></p></div></div>
           </div>
-          <div class="stage" id="stageScene">
-            <div class="chalkboard" id="boardView">
-              <small>黑板上的內容</small>
-              <strong>鏡頭下的家鄉</strong>
-              <p id="boardText">這裡的十一月，陽光照耀滿園柳丁的景象，如金粉從天上落下般美麗。</p>
-            </div>
-            <div class="teacher-card" id="teacherCard">
-              <div class="teacher-icon">師</div>
-              <div>
-                <div class="teacher-row"><b>老師說</b><small id="teacherMood">站在教室前方說明</small></div>
-                <p id="teacherCaption"></p>
-              </div>
-            </div>
-            <div id="immersionLayer" class="immersion-layer"></div>
-          </div>
-
-          <div class="workspace glass-inner">
-            <div class="workspace-head">
-              <div>
-                <small class="workspace-label">我的任務</small>
-                <h3 id="workspaceHeading"></h3>
-              </div>
-              <button id="audioBtn" class="btn btn-audio">播放老師語音</button>
-            </div>
-            <p id="workspaceDirection" class="workspace-direction"></p>
+          <div class="workspace">
+            <div class="workspace-top"><div><span class="workspace-label">我的課本與練習</span><h2 id="workspaceHeading"></h2></div><div class="audio-controls"><button id="ambientToggle" class="audio-btn secondary-audio" type="button" aria-pressed="false">◉ 開啟教室環境聲</button><button id="audioBtn" class="audio-btn" type="button">♫ 播放老師語音</button></div></div>
+            <div id="experienceHint" class="experience-hint" aria-live="polite"></div><p id="workspaceDirection" class="workspace-direction"></p>
             <div id="workspaceContent" class="workspace-content"></div>
-            <div id="distractionNotice" class="distraction-notice" hidden>
-              <span id="distractionText"></span>
-              <button id="dismissDistraction" class="btn btn-mini" type="button">拉回注意力</button>
-            </div>
-            <div id="taskFeedback" class="task-feedback" hidden></div>
+            <div id="distractionNotice" class="distraction-notice" hidden><span id="distractionText"></span><button id="dismissDistraction" type="button">把注意力拉回來</button></div>
+            <div id="taskFeedback" class="task-feedback" role="status" hidden></div>
           </div>
-        </section>
-
-        <aside class="sidebar glass">
-          <div class="student-card">
-            <div id="studentAvatar" class="student-avatar"></div>
-            <div>
-              <p class="eyebrow"><span></span> 你正在體驗</p>
-              <h3 id="sidebarName"></h3>
-              <p id="sidebarDesc"></p>
-            </div>
-          </div>
-
-          <div class="insight-card barrier-card">
-            <small>此刻可能遇到的困難</small>
-            <p id="barrierText"></p>
-          </div>
-          <div class="insight-card support-card">
-            <small>老師可以考慮的調整</small>
-            <p id="supportText"></p>
-            <button id="supportBtn" class="btn btn-support">套用這項調整</button>
-          </div>
-          <div class="insight-card ambient-card">
-            <small>情境提醒</small>
-            <p id="ambientText">你聽見的是教室的環境聲、同學互動與老師指令交織在一起。</p>
-          </div>
-          <button id="nextStepBtn" class="btn btn-primary btn-wide" disabled>完成這一步，前往下一項活動</button>
-        </aside>
+        </div>
+        <aside class="insight-sidebar"><div class="student-profile"><div id="sidebarAvatar" class="big-avatar">晴</div><div><p class="eyebrow">YOU ARE EXPERIENCING</p><h2 id="sidebarName"></h2><p id="sidebarDesc"></p></div></div><div class="barrier-box"><span class="mini-eyebrow">此刻可能遇到的障礙</span><p id="barrierText"></p></div><div class="support-box"><span class="mini-eyebrow">換個角度思考</span><h3>如果老師做一些調整呢？</h3><p>先觀察你遇到的困難，再試一個支持方式，看看課堂是否更容易參與。</p><div id="supportChoices" class="support-choices"></div><div id="supportFeedback" class="support-feedback" hidden></div></div><div class="sidebar-bottom"><button type="button" id="stagePrimaryBtn" class="primary-btn wide-btn">我已嘗試，前往下一項 <span>→</span></button><button type="button" id="skipTaskBtn" class="skip-task-btn">這項活動無法完成，仍可繼續 →</button><p id="stageHelp" class="stage-help"></p></div><p class="caveat-note">體驗是教學用的情境模擬，無法重現個人的真實感官或認知經驗；請聚焦可能的環境障礙和支持策略。</p></aside>
       </div>
     </section>
 
-    <section id="reflectionView" class="view" hidden>
-      <div class="section-head">
-        <div>
-          <p class="eyebrow"><span></span> STEP 03 / REFLECT</p>
-          <h2>體驗完成，請留下你的觀察與調整想法。</h2>
-          <p>這些回應可以作為課堂討論素材，也會同步到交流牆（限同意公開者）。</p>
-        </div>
-      </div>
+    <section id="reflectionView" class="view reflection-view" aria-labelledby="reflectionTitle" hidden>
+      <div class="reflection-top"><p class="eyebrow">STEP 03 / REFLECT & SHARE</p><h1 id="reflectionTitle">把剛才的感受，變成教學上的改變。</h1><p>困難不一定來自學生本身，也可能是課堂資訊、活動規則、座位安排與教學方式之間的落差。</p></div>
       <div class="reflection-layout">
-        <section class="reflection-card glass">
-          <div id="reflectionSummary" class="reflection-summary"></div>
-          <form id="reflectionForm" class="reflection-form">
-            <label>1. 在這位學生的角度中，哪一個環節最困難？
-              <textarea id="hardestMoment" required placeholder="例如：聽老師講解時，重要訊息很容易漏掉。"></textarea>
-            </label>
-            <label>2. 如果你是老師，你會做哪些教學或班級經營調整？
-              <textarea id="teacherAdjustments" required placeholder="例如：同步提供板書重點、口頭指令搭配文字投影、座位安排、視覺提示、分段任務等。"></textarea>
-            </label>
-            <label>3. 這些調整是否也可能幫助班上的其他學生？為什麼？
-              <textarea id="broaderBenefit" required placeholder="例如：因為清楚的任務提示與視覺化支持對多數學生都有幫助。"></textarea>
-            </label>
-            <label class="check-row"><input type="checkbox" id="sharePublic" checked> 我同意將以上回應匿名或以暱稱公開到交流牆</label>
-            <div class="form-actions">
-              <button class="btn btn-primary" type="submit">送出回應</button>
-              <a class="btn btn-ghost" href="./wall.html">直接前往交流牆</a>
-            </div>
-            <div id="submitStatus" class="submit-status"></div>
-          </form>
-        </section>
-        <aside class="reflection-side glass">
-          <div class="tip-card">
-            <small>提醒</small>
-            <p>請把焦點放在「課堂環境與教學如何影響參與」以及「老師可以如何調整」，不要把困難歸因成學生單方面的問題。</p>
-          </div>
-          <div class="tip-card">
-            <small>可延伸討論</small>
-            <ul>
-              <li>調整的是活動、呈現方式、座位、時間、提示，還是回饋方式？</li>
-              <li>哪些支持做法可以成為全班都受益的通用設計？</li>
-              <li>如果是長期班級經營，還可以做哪些事前安排？</li>
-            </ul>
-          </div>
-        </aside>
+        <div class="reflection-form-card"><div class="card-head"><span class="form-count">01 / 分享你的觀察</span><span id="reflectionRoleChip" class="small-tag"></span></div><form id="reflectionForm"><div class="input-block"><label for="reflectionObservation">① 哪個活動最讓你感受到這位學生可能遇到的困難？ <em>*</em></label><textarea id="reflectionObservation" required maxlength="800" minlength="10" rows="4" placeholder="例如：我發現當老師轉身說明時……"></textarea></div><div class="input-block"><label for="reflectionAdjustment">② 如果你是這班的老師，你會如何調整班級經營或教學活動？ <em>*</em></label><textarea id="reflectionAdjustment" required maxlength="1000" minlength="10" rows="5" placeholder="請具體說明：要改變什麼、在哪個活動改變、如何讓學生參與……"></textarea></div><fieldset class="input-block"><legend>③ 你最想嘗試哪些支持策略？ <span class="muted-label">（可複選）</span></legend><div id="strategyChoices" class="strategy-choices"></div></fieldset><div class="input-block"><label for="reflectionQuestion">④ 你想和其他老師討論什麼問題？ <span class="muted-label">（選填）</span></label><textarea id="reflectionQuestion" maxlength="600" rows="3" placeholder="例如：怎樣做才能同時照顧不同學生，又不讓課堂節奏中斷？"></textarea></div><label class="consent"><input id="publishConsent" type="checkbox"><span>我同意以所填寫的姓名或暱稱公開這份反思，供其他參與者閱讀與回覆。未勾選時仍可送出，但只會保存在主持教師的 Google 試算表中。<b>（公開分享才勾選）</b></span></label><div id="submitStatus" class="submit-status" aria-live="polite"></div><button id="submitReflectionBtn" class="primary-btn submit-btn" type="submit">送出反思，完成體驗 <span>→</span></button></form><div id="reflectionSuccess" class="success-panel" hidden><div class="success-icon">✓</div><h2>你的反思已送出。</h2><p id="successText">現在可以閱讀其他老師的做法，並在交流牆上回覆討論。</p><a href="./wall.html" class="primary-btn link-btn">前往回應交流牆 →</a></div></div>
+        <aside class="reflection-sidebar"><div class="summary-card"><p class="eyebrow">YOUR EXPERIENCE</p><h2 id="summaryStudentName">小晴的上課經驗</h2><div class="summary-activity"><span>1</span><div><strong>朗讀課文</strong><p id="summaryBarrier0"></p></div></div><div class="summary-activity"><span>2</span><div><strong>畫出重點</strong><p id="summaryBarrier1"></p></div></div><div class="summary-activity"><span>3</span><div><strong>回答選擇題</strong><p id="summaryBarrier2"></p></div></div><div id="usedSupportCount" class="summary-stats"></div></div><div class="thought-card"><span>供小組討論的核心問題</span><p>我們能調整的是學生，還是學習環境、課堂溝通與教學設計？</p></div><button id="chooseAnotherStudent" class="outline-btn wide-btn" type="button">← 體驗另一位學生</button></aside>
       </div>
     </section>
   </main>
-
-  <footer class="site-footer">
-    <span>換個位置，看見學習・融合教育沉浸式教室</span>
-    <span>網頁設計者：國教院黃彥融副研究員</span>
-  </footer>
+  <footer class="site-footer"><span>換個位置，看見學習 · 教師專業學習情境</span><span>網頁設計者：國教院黃彥融副研究員</span></footer>
 </body>
 </html>

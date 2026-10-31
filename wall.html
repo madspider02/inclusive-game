@@ -1,101 +1,21 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0f5d5b">
-  <meta name="description" content="閱讀其他體驗者對融合教育情境的觀察與調整策略。">
-  <title>回應交流牆｜換個位置，看見學習</title>
-  <link rel="stylesheet" href="./assets/style.css">
-  <script src="./config.js"></script>
-  <script type="module" src="./assets/wall.js"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#153f46">
+  <meta name="description" content="閱讀不同教師對融合教育課堂情境的觀察、調整策略與延伸討論。"><title>回應交流牆｜換個位置，看見學習</title>
+  <link rel="stylesheet" href="./assets/style.css"><script src="./config.js"></script><script type="module" src="./assets/wall.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳至主要內容</a>
-  <div class="ambient ambient-a"></div>
-  <div class="ambient ambient-b"></div>
-
-  <header class="site-header glass">
-    <a class="brand" href="./index.html" aria-label="回到首頁">
-      <span class="brand-badge">學</span>
-      <span>
-        <strong>換個位置，看見學習</strong>
-        <small>融合教育沉浸式教室</small>
-      </span>
-    </a>
-    <nav class="top-nav" aria-label="主要選單">
-      <a href="./index.html">進入體驗</a>
-      <a class="active" href="./wall.html">回應交流牆</a>
-    </nav>
-  </header>
-
-  <main id="main" class="wall-page">
-    <section class="wall-hero glass">
-      <div>
-        <p class="eyebrow"><span></span> COLLECTIVE REFLECTION</p>
-        <h1>看見差異，<em>一起討論改變。</em></h1>
-        <p>閱讀其他體驗者的觀察，想想：如果是你帶這一班，還能怎麼調整活動設計、課堂指令與班級支持？</p>
-      </div>
-      <div class="wall-summary-hero">
-        <strong>4</strong>
-        <span>位學生視角</span>
-      </div>
+  <header class="site-header"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true"><span class="brand-door"></span></span><span><strong>換個位置，看見學習</strong><small>融合教育沉浸式教室</small></span></a><nav class="header-links"><a class="header-link" href="./index.html">進入教室</a><a class="header-link is-current" href="./wall.html">回應交流牆 <span aria-hidden="true">↗</span></a></nav></header>
+  <main id="main" class="wall-main">
+    <div class="wall-hero"><div><p class="eyebrow"><span class="eyebrow-dot"></span> TEACHERS' EXCHANGE WALL</p><h1>看見差異，<em>一起討論改變。</em></h1><p>閱讀其他體驗者的觀察，分享你會如何調整課堂。沒有唯一標準答案；好的支持來自理解、嘗試與持續對話。</p></div><div class="wall-hero-aside" aria-hidden="true"><span>同一課堂</span><strong>4</strong><span>種學生視角</span><div class="wall-orbit"><i></i><i></i><i></i><i></i></div></div></div>
+    <div id="backendBanner" class="backend-banner" role="status"></div>
+    <section class="wall-stats" aria-label="回應概況"><div><span>目前分享</span><strong id="postCount">0</strong><small>份教學反思</small></div><div><span>延伸交流</span><strong id="replyCount">0</strong><small>則回覆</small></div><div><span>最多被提出</span><strong id="commonStrategy">—</strong><small>的調整策略</small></div></section>
+    <section class="wall-content"><div class="wall-toolbar"><div><p class="eyebrow">COLLECTIVE LEARNING</p><h2>大家怎麼看這堂課？</h2></div><div class="wall-actions"><label class="visually-hidden" for="filterRole">依學生角色篩選</label><select id="filterRole"><option value="all">所有學生視角</option><option value="vision">小晴 · 弱視</option><option value="hearing">小廷 · 輕度聽損</option><option value="adhd">小宇 · 注意力調節</option><option value="reading">小禾 · 閱讀理解</option></select><button id="refreshWall" class="outline-btn" type="button">↻ 重新整理</button></div></div>
+      <div class="wall-notice">交流守則：尊重學生個別差異、就教學情境提供具體建議，不張貼可識別學生的個人資訊。老師可在 Google 試算表中隱藏不適當的內容。</div>
+      <div class="discussion-layout"><div><div id="loadStatus" class="load-status" aria-live="polite">正在讀取交流內容……</div><div id="postList" class="post-list"></div></div><aside class="discussion-aside"><div class="discussion-prompt"><span>先想三個問題</span><ol><li>哪個環節讓學生最難參與？</li><li>有哪些障礙可以透過環境或教學改變？</li><li>這些調整能否讓其他學生也受益？</li></ol></div><div class="identity-panel"><label for="wallNickname">回覆時使用的暱稱</label><input id="wallNickname" maxlength="24" placeholder="填入你的暱稱" autocomplete="nickname"><p>只要填入暱稱，就可以回覆其他參與者；不需要 Google 帳號登入。</p></div><a class="primary-btn link-btn wide-btn" href="./index.html">再體驗另一位學生 →</a></aside></div>
     </section>
-
-    <div id="backendBanner" class="backend-banner"></div>
-
-    <section class="wall-stats-grid">
-      <article class="stat-card glass"><small>公開分享</small><strong id="postCount">0</strong><span>則教學反思</span></article>
-      <article class="stat-card glass"><small>留言交流</small><strong id="replyCount">0</strong><span>則回覆</span></article>
-      <article class="stat-card glass"><small>最多人提到</small><strong id="commonStrategy">—</strong><span>的支持方向</span></article>
-    </section>
-
-    <section class="wall-layout">
-      <div class="wall-main-col">
-        <div class="wall-toolbar glass">
-          <div>
-            <p class="eyebrow"><span></span> FILTER</p>
-            <h2>大家如何回應這堂課？</h2>
-          </div>
-          <div class="wall-actions">
-            <select id="filterRole">
-              <option value="all">所有學生視角</option>
-              <option value="vision">小晴・弱視</option>
-              <option value="hearing">小廷・輕度聽損</option>
-              <option value="adhd">小宇・ADHD</option>
-              <option value="reading">小禾・閱讀理解困難</option>
-            </select>
-            <button id="refreshWall" class="btn btn-ghost">重新整理</button>
-          </div>
-        </div>
-
-        <div class="wall-notice glass">交流原則：尊重學生個別差異、聚焦課堂支持與教學調整，不張貼可識別學生個資。</div>
-        <div id="loadStatus" class="load-status">正在讀取交流內容……</div>
-        <div id="postList" class="post-list"></div>
-      </div>
-
-      <aside class="wall-side-col">
-        <section class="glass prompt-card">
-          <small>可討論的方向</small>
-          <ol>
-            <li>哪一個活動最容易形成參與障礙？</li>
-            <li>哪些調整屬於全班都受益的支持？</li>
-            <li>除了當下教學，還有哪些事前班級經營可以準備？</li>
-          </ol>
-        </section>
-        <section class="glass reply-card">
-          <label for="wallNickname">留言暱稱</label>
-          <input id="wallNickname" maxlength="24" placeholder="填入你的暱稱">
-          <p>輸入暱稱後，可以回覆其他體驗者的想法。</p>
-          <a class="btn btn-primary btn-wide" href="./index.html">回到體驗頁面</a>
-        </section>
-      </aside>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <span>換個位置，看見學習・融合教育沉浸式教室</span>
-    <span>網頁設計者：國教院黃彥融副研究員</span>
-  </footer>
+  </main><footer class="site-footer"><span>換個位置，看見學習 · 教師專業學習情境</span><span>網頁設計者：國教院黃彥融副研究員</span></footer>
 </body>
 </html>

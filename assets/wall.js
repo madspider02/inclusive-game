@@ -1,198 +1,127 @@
-const APP = window.APP_CONFIG || {};
-const ROLE_MAP = {
-  vision:{label:'小晴・弱視', class:'amber'},
-  hearing:{label:'小廷・輕度聽損', class:'blue'},
-  adhd:{label:'小宇・ADHD', class:'coral'},
-  reading:{label:'小禾・閱讀理解困難', class:'purple'}
-};
+import { loadWall, submitReply, makeId, IS_DEMO } from './api.js';
 
-const els = {
-  postCount: q('#postCount'), replyCount: q('#replyCount'), commonStrategy: q('#commonStrategy'), filterRole: q('#filterRole'),
-  refreshWall: q('#refreshWall'), postList: q('#postList'), loadStatus: q('#loadStatus'), wallNickname: q('#wallNickname'), backendBanner: q('#backendBanner')
-};
-
-let allPosts = [];
-let allComments = [];
-
-init();
-
-function init(){
-  els.filterRole?.addEventListener('change', render);
-  els.refreshWall?.addEventListener('click', loadWall);
-  loadWall();
+const $ = selector => document.querySelector(selector);
+const ROLE_LABELS = { vision:'小晴 · 弱視', hearing:'小廷 · 輕度聽損', adhd:'小宇 · 注意力調節', reading:'小禾 · 閱讀理解' };
+const state={ posts:[], replies:[], loading:false, filter:'all' };
+function el(tag,className,text) {
+  const item=document.createElement(tag);
+  if(className)item.className=className;
+  if(text!==undefined)item.textContent=String(text);
+  return item;
 }
-
-async function loadWall(){
-  els.loadStatus.textContent = '正在讀取交流內容……';
-  const remote = await fetchRemoteWall();
-  if(remote){
-    allPosts = remote.responses || [];
-    allComments = remote.comments || [];
-    els.backendBanner.textContent = '目前顯示的是 Google Sheets 的公開回應。';
-  }else{
-    allPosts = JSON.parse(localStorage.getItem('immersiveResponses') || '[]').filter(x=>x.sharePublic);
-    allComments = JSON.parse(localStorage.getItem('immersiveComments') || '[]');
-    els.backendBanner.textContent = '目前無法連上 Google Sheets，以下顯示此瀏覽器中的本機示範資料。';
-  }
-  normalize();
-  render();
+function formatDate(iso) {
+  const date=new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('zh-TW',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
 }
-
-async function fetchRemoteWall(){
-  if(!APP.API_URL) return null;
-  try{
-    const [resp1, resp2] = await Promise.all([
-      fetch(`${APP.API_URL}?action=listResponses`, {method:'GET', mode:'cors'}),
-      fetch(`${APP.API_URL}?action=listComments`, {method:'GET', mode:'cors'})
-    ]);
-    if(!resp1.ok || !resp2.ok) throw new Error('bad response');
-    const responses = await resp1.json();
-    const comments = await resp2.json();
-    return {
-      responses: Array.isArray(responses?.data) ? responses.data : Array.isArray(responses) ? responses : [],
-      comments: Array.isArray(comments?.data) ? comments.data : Array.isArray(comments) ? comments : []
-    };
-  }catch(err){
-    console.warn('fetch wall failed', err);
-    return null;
-  }
+function createSection(title,text,kind='') {
+  const area=el('div',`post-section ${kind?'is-'+kind:''}`);
+  area.append(el('span','post-label',title),el('p','',text));
+  return area;
 }
-
-function normalize(){
-  allPosts = allPosts
-    .filter(x=>x.sharePublic !== false && (x.sharePublic === true || x.sharePublic === 'TRUE' || x.sharePublic === 'true' || x.sharePublic === '是' || x.sharePublic === 'yes' || x.sharePublic === '1' || x.public === true || x.isPublic===true || x.Visibility==='public' || x['是否公開']==='是' || typeof x.sharePublic==='undefined'))
-    .map((x,idx)=>(
-      {
-        id: x.id || x.ID || x.timestamp || x.createdAt || `local-${idx}`,
-        participant: x.participant || x.name || x.nickname || x['姓名或暱稱'] || '匿名體驗者',
-        student: x.student || x.role || x['學生代碼'] || 'vision',
-        studentLabel: x.studentLabel || x.roleLabel || x['學生視角'] || ROLE_MAP[x.student || 'vision']?.label || '未分類',
-        hardestMoment: x.hardestMoment || x['最困難環節'] || x.hardest || '',
-        teacherAdjustments: x.teacherAdjustments || x['教師調整'] || x.adjustments || '',
-        broaderBenefit: x.broaderBenefit || x['其他學生也受益'] || x.benefit || '',
-        createdAt: x.createdAt || x.timestamp || x['建立時間'] || new Date().toISOString()
-      }
-    ))
-    .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-
-  allComments = allComments.map((x,idx)=>(
-    {
-      id: x.id || x.ID || `comment-${idx}`,
-      responseId: x.responseId || x.postId || x['回應ID'] || x.parentId || '',
-      nickname: x.nickname || x.name || x.participant || x['暱稱'] || '匿名',
-      content: x.content || x.comment || x['留言內容'] || '',
-      createdAt: x.createdAt || x.timestamp || x['建立時間'] || new Date().toISOString()
-    }
-  )).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
-}
-
-function render(){
-  const role = els.filterRole?.value || 'all';
-  const posts = role==='all' ? allPosts : allPosts.filter(p=>p.student===role);
-  els.postCount.textContent = posts.length;
-  els.replyCount.textContent = allComments.filter(c=>posts.some(p=>String(p.id)===String(c.responseId))).length;
-  els.commonStrategy.textContent = computeCommonStrategy(posts);
-  els.loadStatus.textContent = posts.length ? `目前顯示 ${posts.length} 則公開分享。` : '目前還沒有公開回應。';
-  els.postList.innerHTML = posts.length ? posts.map(renderPostCard).join('') : '<div class="post-card"><p>還沒有公開分享的內容。你可以先回到體驗頁面，完成一位學生的體驗並送出回應。</p></div>';
-  bindCommentForms();
-}
-
-function computeCommonStrategy(posts){
-  const bucket = {視覺提示:0, 分段任務:0, 座位安排:0, 口語加文字:0, 個別提醒:0};
-  const source = posts.map(p=>`${p.teacherAdjustments} ${p.broaderBenefit}`.toLowerCase()).join(' ');
-  if(!source) return '—';
-  if(/視覺|板書|投影|文字/.test(source)) bucket['視覺提示']++;
-  if(/分段|拆解|一步一步/.test(source)) bucket['分段任務']++;
-  if(/座位|靠前|低干擾/.test(source)) bucket['座位安排']++;
-  if(/文字|同步|口語|字幕/.test(source)) bucket['口語加文字']++;
-  if(/提醒|巡視|近身/.test(source)) bucket['個別提醒']++;
-  return Object.entries(bucket).sort((a,b)=>b[1]-a[1])[0]?.[1] ? Object.entries(bucket).sort((a,b)=>b[1]-a[1])[0][0] : '多元支持';
-}
-
-function renderPostCard(post){
-  const role = ROLE_MAP[post.student] || ROLE_MAP.vision;
-  const comments = allComments.filter(c=>String(c.responseId)===String(post.id));
-  return `
-    <article class="post-card">
-      <div class="post-head">
-        <div class="post-author">
-          <div class="post-initial">${escapeHtml(post.participant.slice(0,1))}</div>
-          <div>
-            <strong>${escapeHtml(post.participant)}</strong>
-            <div class="post-meta"><span>${formatDate(post.createdAt)}</span></div>
-          </div>
-        </div>
-        <span class="role-badge"><span class="chip ${role.class}">${role.label[0]}</span>${escapeHtml(post.studentLabel || role.label)}</span>
-      </div>
-      <h3>最困難的環節</h3>
-      <p>${escapeHtml(post.hardestMoment)}</p>
-      <h3>我會怎麼調整</h3>
-      <p>${escapeHtml(post.teacherAdjustments)}</p>
-      <h3>這樣做對全班還有什麼幫助？</h3>
-      <p>${escapeHtml(post.broaderBenefit)}</p>
-
-      <div class="comments">
-        ${comments.length ? comments.map(c=>`<div class="comment-item"><div class="comment-meta"><strong>${escapeHtml(c.nickname)}</strong><small>${formatDate(c.createdAt)}</small></div><p>${escapeHtml(c.content)}</p></div>`).join('') : '<div class="comment-item">還沒有留言。你可以成為第一位回應的人。</div>'}
-        <form class="comment-form" data-post-id="${escapeHtml(String(post.id))}">
-          <textarea placeholder="留下你的回應，例如：我同意這個做法，另外也可以……" required></textarea>
-          <button class="btn btn-primary" type="submit">送出留言</button>
-        </form>
-      </div>
-    </article>
-  `;
-}
-
-function bindCommentForms(){
-  document.querySelectorAll('.comment-form').forEach(form=>{
-    form.addEventListener('submit', async e=>{
-      e.preventDefault();
-      const nickname = (els.wallNickname?.value || '').trim();
-      if(!nickname){ alert('請先在右側填入留言暱稱。'); return; }
-      const content = form.querySelector('textarea').value.trim();
-      if(!content) return;
-      const payload = {
-        action:'submitComment',
-        responseId: form.dataset.postId,
-        nickname,
-        content,
-        createdAt: new Date().toISOString()
-      };
-      const ok = await submitComment(payload);
-      if(ok){
-        allComments.push(payload);
-      }else{
-        const arr = JSON.parse(localStorage.getItem('immersiveComments') || '[]');
-        arr.push(payload);
-        localStorage.setItem('immersiveComments', JSON.stringify(arr));
-        allComments.push(payload);
-      }
-      form.reset();
-      render();
-    });
+function renderStats() {
+  $('#postCount').textContent=state.posts.length;
+  $('#replyCount').textContent=state.replies.length;
+  const counts={};
+  state.posts.forEach(p=>{
+    (Array.isArray(p.strategies)?p.strategies:[]).forEach(str=>{ if(str.length<75) counts[str]=(counts[str]||0)+1; });
   });
+  const largest=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  $('#commonStrategy').textContent=largest?largest[0]:'—';
 }
-
-async function submitComment(payload){
-  if(!APP.API_URL) return false;
-  try{
-    const res = await fetch(APP.API_URL, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify(payload),
-      mode:'cors'
-    });
-    if(!res.ok) throw new Error('bad response');
-    return true;
-  }catch(err){
-    console.warn('submit comment failed', err);
-    return false;
+function renderPost(p) {
+  const card=el('article','post-card');
+  const meta=el('div','post-meta');
+  const identity=el('div','post-identity');
+  const initials=el('span','post-initial',Array.from(p.nickname||'師')[0]||'師');
+  const display=el('div'); display.append(el('b','',p.nickname||'匿名參與者'),el('small','',formatDate(p.createdAt)));
+  identity.append(initials,display);
+  meta.append(identity,el('span','post-role',ROLE_LABELS[p.studentId]||'課堂體驗'));
+  const body=el('div','post-body');
+  body.append(createSection('觀察到的參與障礙',p.observation||''),createSection('打算如何調整教學與班級經營',p.adjustment||'','adjustment'));
+  if(Array.isArray(p.strategies)&&p.strategies.length){
+    const tags=el('div','post-tags');p.strategies.forEach(tag=>tags.appendChild(el('span','',tag)));body.append(tags);
   }
+  if(p.question)body.append(createSection('想跟其他老師討論',p.question,'question'));
+  card.append(meta,body);
+  const replies=state.replies.filter(r=>r.parentId===p.id).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+  const replyBar=el('div','reply-bar');const count=el('span','',`${replies.length} 則延伸討論`);
+  const toggle=el('button','reply-toggle','＋ 回覆這位老師');toggle.type='button';toggle.setAttribute('aria-expanded','false');
+  replyBar.append(count,toggle);card.append(replyBar);
+  if(replies.length){const list=el('div','replies');replies.forEach(reply=>{
+    const row=el('div','reply-card');const header=el('div');header.append(el('strong','',reply.nickname||'匿名參與者'),el('small','',formatDate(reply.createdAt)));
+    row.append(header,el('p','',reply.message||''));list.appendChild(row);
+  });card.appendChild(list);}
+  const form=el('form','reply-form');form.hidden=true;
+  const label=el('label','',`回覆 ${p.nickname||'這位老師'} 的教學想法`);
+  const input=el('textarea');input.id=`reply-${p.id}`;label.htmlFor=input.id;input.required=true;input.maxLength=600;input.minLength=3;
+  input.placeholder='分享一個具體做法、追問或不同觀點……';
+  const status=el('span','reply-form-status');status.setAttribute('role','status');
+  const button=el('button','', '送出回覆 →');button.type='submit';
+  form.append(label,input,status,button);card.appendChild(form);
+  toggle.addEventListener('click',()=>{
+    form.hidden=!form.hidden;
+    toggle.textContent=form.hidden?'＋ 回覆這位老師':'－ 收起回覆欄';
+    toggle.setAttribute('aria-expanded',String(!form.hidden));
+    if(!form.hidden)input.focus();
+  });
+  let pendingReplyId=null;
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    const nickname=$('#wallNickname').value.trim();
+    if(!nickname){ status.textContent='請先在右側（手機版為下方）填寫回覆暱稱。';$('#wallNickname').focus();return; }
+    if(input.value.trim().length<3){status.textContent='回覆至少填寫 3 個字。';return;}
+    sessionStorage.setItem('classroomNickname',nickname);
+    const data={id:pendingReplyId||makeId(),parentId:p.id,nickname,message:input.value.trim()};
+    pendingReplyId=data.id;button.disabled=true;status.textContent='正在送出並確認儲存……';
+    try{
+      const result=await submitReply(data);
+      status.textContent=result.moderation==='pending'?'回覆已儲存，等待教師審核後顯示。':'回覆已送出！';
+      pendingReplyId=null;
+      input.value='';
+      await refreshWall({quiet:true});
+    }catch(error){status.textContent=`未能確認儲存：${error.message}`;}
+    finally{button.disabled=false;}
+  });
+  return card;
 }
-
-function q(sel){return document.querySelector(sel)}
-function formatDate(v){
-  const d = new Date(v);
-  if(Number.isNaN(d.getTime())) return '—';
-  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+function renderPosts() {
+  const visible=state.filter==='all'?state.posts:state.posts.filter(p=>p.studentId===state.filter);
+  const container=$('#postList');container.replaceChildren();
+  if(!visible.length){
+    const empty=el('div','empty-wall');empty.append(el('strong','',state.filter==='all'?'交流牆還沒有分享':'這個學生視角目前還沒有分享'),el('p','','完成一次體驗後，你可以成為第一位分享教學想法的老師。'));
+    const link=el('a','primary-btn link-btn','去體驗一堂國語課 →');link.href='./index.html';empty.append(link);container.append(empty);return;
+  }
+  visible.forEach(p=>container.appendChild(renderPost(p)));
 }
-function escapeHtml(str=''){return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+async function refreshWall({quiet=false}={}) {
+  if(state.loading)return;
+  state.loading=true;
+  if(!quiet){$('#loadStatus').hidden=false;$('#loadStatus').textContent='正在讀取交流內容……';}
+  try{
+    const data=await loadWall();
+    state.posts=(data.posts||[]).filter(p=>p&&ROLE_LABELS[p.studentId]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    state.replies=(data.replies||[]).filter(r=>r&&r.parentId);
+    renderStats();renderPosts();
+    $('#loadStatus').hidden=true;
+  }catch(error){
+    $('#loadStatus').hidden=false;
+    $('#loadStatus').textContent=`讀取失敗：${error.message}。請確認後按「重新整理」。`;
+  }finally{state.loading=false;}
+}
+function init() {
+  $('#backendBanner').textContent=IS_DEMO
+    ? '目前為本機示範模式：可以完整體驗並測試回應／回覆，但資料只會保存在這個瀏覽器，其他使用者看不到。請依部署說明填入 Apps Script 網址，才能跨裝置共用。'
+    : '';
+  $('#wallNickname').value=sessionStorage.getItem('classroomNickname')||'';
+  $('#wallNickname').addEventListener('change',()=>sessionStorage.setItem('classroomNickname',$('#wallNickname').value.trim().slice(0,24)));
+  $('#filterRole').addEventListener('change',event=>{state.filter=event.target.value;renderPosts();});
+  $('#refreshWall').addEventListener('click',()=>refreshWall());
+  refreshWall();
+  // 課堂中自動更新；有使用者正在輸入回覆時不重建畫面。
+  setInterval(()=>{
+    if(document.hidden || document.activeElement?.tagName==='TEXTAREA')return;
+    refreshWall({quiet:true});
+  },45000);
+}
+init();
