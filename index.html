@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#153f46">
   <meta name="description" content="一堂國語課，四種不同的學習處境。走進教室，從學生的座位重新思考融合教育的班級經營與教學調整。">
   <title>換個位置，看見學習｜融合教育沉浸式教室</title>
-  <link rel="stylesheet" href="./assets/style.css">
+  <link rel="stylesheet" href="./assets/style.css?v=4">
   <script src="./config.js"></script>
-  <script type="module" src="./assets/app.js"></script>
+  <script type="module" src="./assets/app.js?v=4"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳至主要內容</a>
@@ -105,7 +105,26 @@
           </div>
           <div class="workspace">
             <div class="workspace-top"><div><span class="workspace-label">我的課本與練習</span><h2 id="workspaceHeading"></h2></div><div class="audio-controls"><button id="ambientToggle" class="audio-btn secondary-audio" type="button" aria-pressed="false">◉ 開啟教室環境聲</button><button id="audioBtn" class="audio-btn" type="button">♫ 播放老師語音</button></div></div>
-            <div id="experienceHint" class="experience-hint" aria-live="polite"></div><p id="workspaceDirection" class="workspace-direction"></p>
+            <div id="experienceHint" class="experience-hint" aria-live="polite"></div>
+            <section id="hearingPanel" class="hearing-panel" aria-labelledby="hearingPanelTitle" hidden>
+              <div class="hearing-panel-header">
+                <div><span class="hearing-kicker">LISTENING IN A BUSY CLASSROOM</span><h3 id="hearingPanelTitle">聽見聲音，不一定聽懂指令</h3></div>
+                <span id="hearingSetting" class="hearing-setting"></span>
+              </div>
+              <p id="hearingIntro" class="hearing-intro"></p>
+              <div class="hearing-level-wrap"><span>教室干擾程度（不是聽損程度）</span>
+                <div id="hearingLevelControls" class="hearing-level-controls" role="group" aria-label="選擇教室干擾程度">
+                  <button type="button" data-hearing-level="1">低干擾</button>
+                  <button type="button" data-hearing-level="2">較吵教室</button>
+                  <button type="button" data-hearing-level="3" class="active">高干擾教室</button>
+                </div>
+              </div>
+              <div id="hearingWave" class="hearing-wave" aria-hidden="true"><span>老師的聲音</span><div class="wave-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span>同學、翻書、走動聲</span></div>
+              <div id="hearingTranscript" class="hearing-transcript" hidden></div>
+              <div class="hearing-decision"><strong id="hearingQuestion"></strong><div id="hearingChoices" class="hearing-choices"></div><div id="hearingResult" class="hearing-result" role="status" aria-live="polite"></div></div>
+              <p class="hearing-footnote">這是「嘈雜教室造成口語訊息漏接」的教學示意，並非聽力檢查或輕度聽損的聲學重建。按下播放才會出聲；請由較低裝置音量開始，可隨時停止。</p>
+            </section>
+            <p id="workspaceDirection" class="workspace-direction"></p>
             <div id="workspaceContent" class="workspace-content"></div>
             <div id="distractionNotice" class="distraction-notice" hidden><span id="distractionText"></span><button id="dismissDistraction" type="button">把注意力拉回來</button></div>
             <div id="taskFeedback" class="task-feedback" role="status" hidden></div>
