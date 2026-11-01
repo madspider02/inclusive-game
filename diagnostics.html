@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#153f46">
+  <title>主持教師連線診斷｜換個位置，看見學習</title>
+  <link rel="stylesheet" href="./assets/style.css?v=6">
+  <script src="./config.js"></script>
+  <script type="module" src="./assets/diagnostics.js?v=6"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至內容</a>
+  <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="回到首頁"><span class="brand-mark" aria-hidden="true"><span class="brand-door"></span></span><span><strong>換個位置，看見學習</strong><small>融合教育沉浸式教室</small></span></a>
+    <nav class="header-links" aria-label="主要選單"><a class="header-link" href="./index.html">進入教室</a><a class="header-link" href="./wall.html">回應交流牆</a></nav>
+  </header>
+  <main id="main" class="diagnostic-main">
+    <div class="diagnostic-hero">
+      <p class="eyebrow">GOOGLE SHEETS · CONNECTION CHECK</p>
+      <h1>主持教師｜連線診斷</h1>
+      <p>這裡會分別測試：① Apps Script 是否已部署 V6，② 寫入請求是否送達，③ 試算表是否真的出現這筆資料。<strong>測試寫入使用虛構內容且不公開。</strong></p>
+      <p id="apiUrlDisplay" class="diagnostic-endpoint"></p>
+    </div>
+    <div class="diagnostic-grid">
+      <section class="diagnostic-card">
+        <div class="diag-heading"><span class="diag-no">01</span><div><h2>檢查讀取與部署版本</h2><p>不會新增任何使用者反思。</p></div></div>
+        <button id="testHealth" class="primary-btn" type="button">測試 API 健康狀態</button>
+        <div id="healthResult" class="diag-result" role="status">尚未測試。</div>
+      </section>
+      <section class="diagnostic-card">
+        <div class="diag-heading"><span class="diag-no">02</span><div><h2>實際寫入一筆不公開測試</h2><p>和體驗者送出反思使用同一條寫入流程。</p></div></div>
+        <button id="testWrite" class="primary-btn" type="button">測試寫入 Google Sheets</button>
+        <div id="writeResult" class="diag-result" role="status">尚未測試。</div>
+      </section>
+      <section class="diagnostic-card">
+        <div class="diag-heading"><span class="diag-no">03</span><div><h2>再次核對剛才的寫入</h2><p>使用唯一 ID 查驗，而不是看到「請求已發送」就當作成功。</p></div></div>
+        <button id="testVerify" class="outline-btn" type="button" disabled>再次核對測試 ID</button>
+        <div id="verifyResult" class="diag-result" role="status">先進行步驟 02。</div>
+      </section>
+    </div>
+    <section class="diagnostic-help">
+      <h2>怎麼判讀結果？</h2>
+      <div class="diagnostic-tips">
+        <p><strong>第一步失敗：</strong>通常是部署網址、存取權限或尚未更新 V6。請更新 Apps Script 的 <code>Code.gs</code>，再由「部署 → 管理部署作業 → 編輯 → 新增版本」發布，保留原網址。</p>
+        <p><strong>第一步成功，第二步失敗：</strong>請先到 Google 試算表確認是否有 <code>DeliveryLog</code> 工作表；有 <code>RECEIVED / ERROR</code> 表示請求到達但後端寫入失敗；完全沒有紀錄，可能是 POST 根本沒送達，或網站連到錯誤部署。</p>
+        <p><strong>第二步成功：</strong>會在 <code>Responses</code> 或 <code>Responses_V3</code> 增加一筆「系統連線測試」且狀態為 <code>PRIVATE</code> 的資料。此筆測試不會出現在交流牆，可以在確認後由主持教師手動刪除。</p>
+      </div>
+      <p>若是 Apps Script 編輯器中仍無法寫入，請直接執行 <code>testWriteFromEditor</code>。它會在執行紀錄中顯示寫入的工作表名稱與 ID。</p>
+    </section>
+  </main>
+  <footer class="site-footer"><span>換個位置，看見學習 · 網站連線檢測</span><span>網頁設計者：國教院黃彥融副研究員</span></footer>
+</body>
+</html>

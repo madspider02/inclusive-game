@@ -1,35 +1,31 @@
-# V3 互動驗收紀錄（2026-10-31）
+# V6 測試紀錄｜2026-10-31
 
-## 實際執行環境
+## 已完成
 
-- Linux 容器內的 **Chromium**，透過 Playwright 操作並檢查 DOM、CSS 計算樣式及 JavaScript 異常。
-- 因測試環境限制，不允許由瀏覽器直接瀏覽本機 HTTP/外部 URL，故以 `set_content` 注入同一份 HTML/CSS，並將 ES module 的 import 連接到測試用資料層；後端另外以 Node VM 模擬 Google Apps Script 的 Sheets 介面。這**不是** GitHub Pages / Google 線上部署測試。
+- JavaScript 語法：`assets/app.js`、`assets/api.js`、`assets/wall.js`、`assets/diagnostics.js` 均通過 `node --check`。
+- Apps Script `Code.gs`：以 Node VM 的 Google Sheets 物件模擬器執行 `setupSheets()`、`testWriteFromEditor()`、`doGet` 與 `doPost`，確認：
+  - `health` 回應版本 6.0.0 與實際分頁。
+  - 純文字 JSON POST 與表單 `payload` POST 均能解析。
+  - 以唯一 ID 檢查存在性、重送同一 ID 不重複新增。
+  - PRIVATE 回應只存入試算表、不進公開列表，VISIBLE 回應可列出。
+  - 無效資料在 `DeliveryLog` 產生 ERROR；正確資料有 RECEIVED / SAVED。
+  - JSONP callback 讀取格式正確。
+- Chromium 瀏覽器 DOM 操作（**模擬後端**；受環境限制，以 `set_content` 注入頁面及程式）：
+  - 四角色各自從首頁輸入暱稱 → 選學生 → 朗讀 → 畫重點 → 選擇題 → 反思送出，全部完成。
+  - ADHD 桌面遮擋、移開物品、重新找閱讀位置、碰桌、長指令、起身，皆能觸發；教師支持可移除遮擋。
+  - ADHD 手機尺寸（390 x 844）完成相同流程。
+  - 健康檢查 / 寫入 / ID 查核三階段 UI 成功（使用模擬回應）。
+  - 模擬第一次 no-cors POST 遺失時，備援表單 POST 使用同一 ID，後續查核可成功。
 
-## 已通過
+## 尚未驗證
 
-- [x] 起始頁 → 輸入暱稱 → 教室；首頁確實隱藏。
-- [x] 教室可操作方向鍵移動角色，靠近學生再 Enter 進入。
-- [x] 弱視、輕度聽損、ADHD、閱讀理解困難：四位學生各完成三項課堂活動（共 12 段）。
-- [x] 每項活動均可套用教師支持後比較，流程可前進。
-- [x] 朗讀、重點句選取、選擇題回饋、課後反思表單完成。
-- [x] 弱視：支持前模糊，支持後恢復清晰。
-- [x] 輕度聽損：指令由片段轉完整；TTS 音量由 0.09 回到 0.92。
-- [x] 閱讀理解：視覺漂移在支持後移除，亦可按鈕關閉視覺特效。
-- [x] 可跳過三項任務直接進入反思，不會被困住。
-- [x] 在本機示範資料層：送出公開反思 → 交流牆讀到貼文 → 送出回覆 → 回覆數增加。
-- [x] 在本機示範資料層：未勾選公開的反思不會顯示在交流牆。
-- [x] 手機 390×844：首頁、教室、課堂三階段均未產生水平捲動。
-- [x] Apps Script 模擬：建立工作表、送出、查詢、避免重複、公開與私密過濾、回覆。
-- [x] Apps Script 模擬：舊版欄位轉入 V3，新工作表與舊工作表都保留，重跑不會重複匯入。
-- [x] 前端 JavaScript、後端 GAS JavaScript 的語法檢查。
+- 使用者實際 Google Apps Script 端點的部署版本與訪客權限。
+- 實際 Google Sheets 的跨來源寫入與 Google Workspace 安全政策。
+- 真正兩台裝置之間的資料同步與公開交流牆。
+- 不同手機、瀏覽器的音量與環境聲聽感。
 
-## 尚待使用者正式部署後驗收
+**以上未驗證項目必須由使用者部署後，從 `diagnostics.html` 依步驟測試。**
 
-- [ ] 使用真實 GitHub Pages 網域完整體驗。
-- [ ] 以真實 Google Apps Script /exec 網址執行 POST 並驗證寫入 Sheets。
-- [ ] 兩台不同裝置確認交流牆同步。
-- [ ] 在不同作業系統及瀏覽器實際試聽 TTS 的音量與環境聲。
+## 本版本與先前 ZIP 不同
 
-## 特別說明
-
-文字漂移、聲音變小、模糊與干擾訊息均是教學用象徵性情境，不可視為任何障礙類別的完整或醫學上精確的模擬。
+V5 壓縮檔缺漏了 `config.js`、`assets/api.js`、`assets/wall.js` 和 `google-apps-script/Code.gs` 等必要檔案。V6 ZIP 將它們全部補齊，並包含新的 `diagnostics.html` 與 `assets/diagnostics.js`。

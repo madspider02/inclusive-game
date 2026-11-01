@@ -1,97 +1,117 @@
-# 換個位置，看見學習｜融合教育沉浸式教室 V3（已做瀏覽器互動測試）
+# 換個位置，看見學習｜V6 完整版
 
 網頁設計者：**國教院黃彥融副研究員**
 
-這個網站供師資培育課程、融合教育教師研習與班級經營討論使用。課文為〈鏡頭下的家鄉〉，四位學生分別是弱視、輕度聽損、ADHD 注意力調節困難、閱讀理解困難。每位學生都會經歷「跟著老師朗讀 → 畫重點 → 回答選擇題」。
+這是一套可直接放在 GitHub Pages 的融合教育沉浸式體驗網站。使用者先輸入暱稱、在教室中選擇學生，再依序體驗〈鏡頭下的家鄉〉的朗讀、畫重點與選擇題，最後反思並交流。
 
-> 重要教學提醒：這是課堂障礙及教學調整的情境模擬，不是障礙診斷工具，不代表所有障礙學生都有同樣的感官或認知經驗。閱讀文字漂動尤其只是用來象徵「閱讀負荷」的視覺設計，並不是閱讀理解困難的共通症狀。
+四位學生：弱視（小晴）、輕度聽損（小廷）、ADHD 注意力調節困難（小宇）、閱讀理解困難（小禾）。
 
-## 這一版修正了什麼
+## V6 核心更新
 
-1. 修正先前版本 **首頁按開始後仍顯示** 的頁面切換錯誤。首頁、教室、課堂、反思只會出現目前階段。
-2. 三段任務都能透過「試用教師支持」比較前後差異；沒有因答案錯誤而卡住的過關門檻。
-3. 每個角色在每一段活動都會顯示不同的課堂事件：
-   - **弱視**：遠距板書與紙本字體不易辨識；可放大字體、提高對比。
-   - **輕度聽損**：片段口語指令；點擊語音按鈕時降低 TTS 音量至 0.09（正常情境為 0.92）；可同步提供完整文字指令。
-   - **ADHD**：走廊、同學動作與短暫中斷提示；可選擇分段任務與降低干擾，不強制計時。
-   - **閱讀理解困難**：以適度文字漂動象徵閱讀負荷，並加入詞義及文章結構線索支持。
-4. **教室環境聲**採自主開啟，可隨時關閉；瀏覽器不支援時不影響其他任務。動態效果也可選擇降低。
-5. 可跳過目前無法完成的任務，仍能進入反思，不把模擬難題變成對學生能力的測驗。
-6. 後端使用「送出 → 查詢唯一 ID → 確認寫入」策略，避免前端只發出請求就說資料已送出。
-7. `Code.gs` 能辨識曾使用舊版九欄格式的 Google Sheets；執行 `setupSheets` 會安全建立新版工作表並複製舊資料，**不會刪除原始工作表**。
+### A. 小宇（ADHD）的課堂干擾不再只是文字提醒
 
-## 下載後的資料夾結構
+在朗讀、畫重點、選擇題三個活動中，都會出現環境與活動要求互相干擾的情境：
+
+- **同學碰到桌子**：課本畫面發生短暫震動。可按「重播：同學碰到桌子」再次觀察。
+- **老師一次交代太長的指令**：完整指令會出現一段時間，接著畫面只留下片段。可按「聽：老師的長指令」比較。
+- **起身與張望**：回來後需要再次確認剛才的閱讀位置。
+- **桌面物品直接遮擋課本**：必須先移開遮擋物，再進行「找回剛剛讀到哪裡」的操作。
+
+每個活動都可試用不同教師支持；支持後會呈現清楚的步驟、可見的任務提示與較低干擾的桌面。這是**情境與環境障礙模擬**，不是宣稱每個 ADHD 學生都會出現同樣的行為。避免強迫過關，也提供「減少視覺模擬特效」功能。
+
+### B. Google Sheets 無法寫入的問題已加入診斷與備援
+
+先前版本的 `no-cors` 寫入是**無法直接讀取回應內容**的。V6 改為：
+
+1. **先確認部署版本**：GET `?action=health` 要取得 `apiVersion: "6.0.0"`，否則不送資料，直接顯示部署未更新的訊息。
+2. **帶唯一 ID 寫入**：先用 `fetch` / `no-cors` 送出 JSON。
+3. **以 JSONP 查詢 ID 是否存在**：只有 Google Sheets 後端回傳 `exists:true`，前端才顯示「已存入」。
+4. **寫入未確認時，改用表單 POST 備援**：不改變 ID，避免重複寫入；之後再次查核。
+5. **新增 `DeliveryLog` 工作表**：記錄 `RECEIVED`、`SAVED`、`ERROR`，便於判斷是沒有進到後端還是儲存發生錯誤。此紀錄**不存放使用者回答文字**。
+6. **增加 `diagnostics.html`**：可直接從網頁測試健康檢查、送出一筆不公開測試、以及查核確實寫入。
+7. **反思備份**：若現場網路仍不穩，反思頁可按「複製我的反思備份」，避免失去輸入內容。
+
+V6 的 Sheets 工作表通常是 `Responses`、`Comments`、`DeliveryLog`；若你之前曾部署過不同欄位架構，資料會寫到 **`Responses_V3` / `Comments_V3`**。**請確認你看的不是舊版 `Responses` 工作表。**
+
+## 完整檔案結構
 
 ```text
-index.html                   首頁、教室、課堂、反思
-wall.html                    教師回應交流牆
-config.js                    已填入你提供的 Apps Script /exec URL
+index.html                   網站首頁、教室、三項學習活動、反思
+wall.html                    交流牆
+diagnostics.html            主持教師連線診斷（在根目錄）
+config.js                    已填入原本提供的 Apps Script /exec 網址
 assets/
-  app.js                     四位學生、三項任務與互動邏輯
-  wall.js                    交流牆與留言
-  api.js                     Sheets 讀寫、確認寫入、本機示範模式
-  style.css                  網站視覺與體驗特效
+  style.css                  畫面樣式與情境特效
+  app.js                     四角色、三任務、干擾事件、反思流程
+  api.js                     後端讀寫、版本檢查、查核與表單備援
+  wall.js                    交流牆、回覆與篩選
+  diagnostics.js             連線診斷操作
 google-apps-script/
-  Code.gs                    Apps Script 後端（需手動更新部署）
-README.md                    本文件
-TEST_REPORT.md               具體測試清單
+  Code.gs                    試算表後端（**務必在 Apps Script 編輯器更新**）
 .nojekyll                    GitHub Pages 靜態網站設定
+README.md                    本說明
+TEST_REPORT.md               測試範圍與限制
 ```
 
-## 一、更新 Google Apps Script（需要執行）
+以上樹狀排版中 `diagnostics.html` 與 `google-apps-script/` 都位於儲存庫**根目錄**。
 
-你提供的網址已設定在 `config.js`：
+## 一、先修好 Google Apps Script（重點）
+
+你原本提供的 `/exec` 已寫在 `config.js`：
 
 `https://script.google.com/macros/s/AKfycbz5j6yhm7HX-cpy31sVWUAdTWg2dbFZ-84AWSb_hIvXBUwklPN1I67aUn3dPgnsSVwz2g/exec`
 
-但 **網址已填入，不等於目前 Google 端已更新程式**。請操作：
+請務必在**原本對應該網址的 Apps Script 專案**操作；只更新 GitHub 檔案，不會改變 Google 伺服器上的程式。
 
-1. 開啟原本對應這個 `/exec` 網址的 Google 試算表，選「擴充功能 → Apps Script」。
-2. 將 `google-apps-script/Code.gs` 的程式完整貼上，取代之前的 `Code.gs`，然後儲存。
-3. 在上方函式選單選 `setupSheets` 並執行一次，確認授權。**不要直接按 `doGet` 或 `doPost`**。這版直接按 `doGet` 也不會報未定義參數，但不是標準測試方法。
-4. 點「部署 → 管理部署作業 → 編輯（鉛筆圖示）」，選「新增版本」，按部署。要維持原本 `/exec` 網址就必須**編輯原部署而不是另外建立新部署**。
-5. 確認部署執行身分為「我」，存取權限為「任何人」。若 Google Workspace 政策禁止公開存取，需要另行處理。
-6. 開啟以下兩個測試網址，應收到 JSON：
-   - `你的/exec?action=list`
-   - `你的/exec?action=list&prefix=myCallback`（將呈現 JavaScript callback 形式）
+1. 從正確的 Google 試算表選「**擴充功能 → Apps Script**」。如果原本是獨立建立的 Apps Script 專案，請在 `Code.gs` 的 `WORKSHOP.SPREADSHEET_ID` 填入該試算表的 ID，不能把整個試算表網址填進去。
+2. 用本 ZIP 中 `google-apps-script/Code.gs` 的**全文**取代原有 `Code.gs`，按儲存。
+3. Apps Script 函式選單選 `setupSheets`，按「執行」並完成 Google 授權。這一步會確保必要工作表存在。
+4. 再執行 `testWriteFromEditor`。成功時，執行紀錄會列出測試資料寫進哪張工作表（`Responses` 或 `Responses_V3`）及測試 ID。這一步不需要 GitHub 網頁，能排除試算表權限、綁定錯誤。
+5. 點「**部署 → 管理部署作業 → 目前網頁應用程式的編輯（鉛筆） → 版本選新增版本 → 部署**」。
+6. 執行身分應為「**我**」，存取權限須允許任何訪客（匿名亦可）。若機關 Google Workspace 政策不允許匿名，請依單位資訊政策評估其他後端，不要讓參與者各自登入你的 Google 帳號。
+7. 保持**原部署的 `/exec` 網址**，不要只按「測試部署」，也不要誤建一個新的部署卻沿用舊網址。如果部署網址確實變更，必須同步更新 `config.js`。
 
-注意：如果舊版 `Responses` / `Comments` 欄位格式不同，會建立 `Responses_V3` / `Comments_V3` 來避免欄位錯位；舊資料會複製進去，原始工作表不會刪除。
+### 如何確認後端已更新？
 
-## 二、上傳 GitHub Pages
+在網址後面加 `?action=health`，例如：
 
-1. 把 ZIP **解壓縮**。
-2. 進入解壓縮後的資料夾，選取裡面的檔案和 `assets`、`google-apps-script` 目錄，**一起上傳到 GitHub 儲存庫根目錄**。`index.html` 應位於儲存庫根目錄，不要多包一層 `inclusive-classroom-v3-tested`。
-3. GitHub 儲存庫 → `Settings` → `Pages` → `Deploy from a branch` → `main` → `/(root)` → `Save`。
-4. 網頁網址形式：`https://帳號.github.io/儲存庫名稱/`，回應交流牆為同網址加 `/wall.html`。
+`https://script.google.com/macros/s/AKfycbz5j6yhm7HX-cpy31sVWUAdTWg2dbFZ-84AWSb_hIvXBUwklPN1I67aUn3dPgnsSVwz2g/exec?action=health`
 
-## 三、正式研習前的驗收（非常重要）
+正常應看到類似：
 
-請用兩台不同裝置或兩個不同的瀏覽器測試：
-
-1. 在裝置 A 開首頁、輸入測試暱稱、體驗任一學生至反思頁。
-2. 勾選公開分享，送出至少 10 字的觀察與教學調整。
-3. 確認網站顯示「已存入 Google Sheets」的成功訊息。
-4. 在試算表查看是否有新資料：新版欄位在 `Responses` 或 `Responses_V3`。
-5. 在裝置 B 開 `wall.html`，確認能看到 A 的公開反思。
-6. 在 B 留言，確認留言進入 `Comments` 或 `Comments_V3`，並在 A 重新整理交流牆後看得到。
-7. 再送出一份**不勾選公開**的反思，確認試算表有資料但交流牆不顯示。
-8. 如需人工審核，請在 Apps Script 中將 `MODERATE_NEW_POSTS` 改為 `true`，並建立新部署版本。
-
-**注意：**後端讀寫需要你在 Google 帳戶中部署授權；本次工具環境不能直接替你操作或驗證這個線上 `/exec` 端點。不要把本機瀏覽器測試結果當成線上連線已通過。
-
-## 四、本機示範模式（不修改你的 Google 網址）
-
-如果只是要離線試玩，可以在一份複製的 `config.js` 中暫時將 `API_URL` 留空。此時回應只存於當前瀏覽器，不會傳至 Google Sheets。請使用本機 HTTP 伺服器或 GitHub Pages 開啟，不要直接用 `file://` 雙擊 HTML（ES module 可能被瀏覽器擋下）：
-
-```bash
-python3 -m http.server 8000
+```json
+{"ok":true,"apiVersion":"6.0.0","sheets":{"responses":"Responses","comments":"Comments","deliveryLog":"DeliveryLog"}}
 ```
 
-然後造訪 `http://localhost:8000/`。
+若得到不支援的動作、舊版本、登入頁面或權限錯誤，代表目前網址還**沒有指向可公開使用的 V6 後端**。程式不可能僅靠更新 GitHub 就修好 Google 端的部署。
 
-## 安全與個資說明
+## 二、把完整網站上傳到 GitHub Pages
 
-- 不要在公開網站或 `config.js` 放入 Google API Token、密碼或其他機密。
-- 建議使用暱稱，不蒐集學生的真實姓名、診斷或敏感個資。
-- 「公開分享」採主動勾選；不勾選時仍能送出，僅主持人可在試算表查看。
-- 公開匿名表單不能防止惡意留言；研習主持人可於試算表把貼文或留言的 `Status` 改成 `HIDDEN`，以停止公開顯示。
+1. 下載 ZIP 並解壓縮。
+2. 把**解壓縮資料夾內的檔案與子資料夾**一次上傳至 GitHub repository 根目錄，確保 `index.html`、`config.js`、`diagnostics.html` 和 `assets/` 在同一層。
+3. 到 `Settings → Pages → Deploy from a branch → main → /(root)`。
+4. 開啟 `https://你的帳號.github.io/儲存庫名稱/`。
+5. 在網址後加 `diagnostics.html`，例如 `https://你的帳號.github.io/儲存庫名稱/diagnostics.html`，依序點三項測試。
+
+Google Sheets 後端需要進行**原部署的更新**，GitHub Pages 網站需要進行**根目錄全檔覆蓋**，兩邊缺一不可。
+
+### 如果診斷頁結果仍是失敗
+
+- **健康檢查失敗**：檢查 `/exec` 是否還是舊部署、權限是否允許匿名使用者、Google Workspace 是否封鎖匿名網頁應用程式。
+- **健康檢查通過，寫入失敗**：打開正確試算表的 `DeliveryLog`。若有 `RECEIVED` 後接 `ERROR`，依 Detail 內容追查；若連 `RECEIVED` 都沒有，可能是跨來源 POST 被擋或網址指向另一個部署。
+- **編輯器直接寫入成功，網站端失敗**：問題集中在網頁應用程式**部署版本、執行身分、訪客權限或跨來源寫入**，而非試算表無法存取。
+- **試算表有資料，但看錯分頁**：檢查 `Responses_V3` / `Comments_V3`。
+
+## 三、正式研習前驗收
+
+請用兩個不同裝置測試。先在 A 完成小宇三項活動、提交**公開回應**，確認頁面顯示「已存入 Google Sheets」，再在試算表對應工作表找到該資料；用 B 開 `wall.html` 應看得到那則公開回應，再從 B 留言並回到 A 確認是否同步。最後送出一筆**不公開**反思，確認只在試算表出現而沒有上牆。
+
+## 學生情境與研究倫理提醒
+
+這是讓教師討論**課堂障礙與可調整的教學條件**的體驗設計，不是醫學或心理測驗。ADHD 注意力調節差異具有個別性，模擬中的桌面遮擋、起身、分心事件是具體教室情境，不代表每個 ADHD 學生一定如此。閱讀理解困難的文字漂動也是象徵性效果，不是閱讀障礙的通用症狀。應同時鼓勵研習者討論學生能力、優勢、偏好與支持方式。
+
+網站建議使用暱稱，不要求蒐集學生個資。公開分享必須主動勾選；未勾選仍會存入 Google Sheets（`PRIVATE`），但不會公開。若有疑慮，可於 `Code.gs` 將 `MODERATE_NEW_POSTS` 改為 `true`，新增回應先標記 `PENDING` 待主持教師審核。
+
+## 程式檢查與限制
+
+見 `TEST_REPORT.md`。目前完成本機 JavaScript 語法、互動流程、**模擬後端**與 Apps Script 物件模型測試；**無法從本工作環境登入你的 Google 帳號或讀取目前正式 `/exec` 端點的真實回應，因此尚未完成線上端到端驗收**。
