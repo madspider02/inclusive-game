@@ -79,7 +79,7 @@ function renderPost(p) {
       status.textContent=result.moderation==='pending'?'回覆已儲存，等待教師審核後顯示。':'回覆已送出！';
       pendingReplyId=null;
       input.value='';
-      await refreshWall({quiet:true});
+      await refreshWall({quiet:true,force:true});
     }catch(error){status.textContent=`未能確認儲存：${error.message}`;}
     finally{button.disabled=false;}
   });
@@ -94,12 +94,20 @@ function renderPosts() {
   }
   visible.forEach(p=>container.appendChild(renderPost(p)));
 }
-async function refreshWall({quiet=false}={}) {
+function hasUnsentReply() {
+  return Array.from(document.querySelectorAll('.reply-form')).some(form=>!form.hidden || Boolean(form.querySelector('textarea')?.value.trim()));
+}
+async function refreshWall({quiet=false,force=false}={}) {
   if(state.loading)return;
+  if(!force && hasUnsentReply()){
+    if(!quiet){$('#loadStatus').hidden=false;$('#loadStatus').textContent='目前有尚未送出的留言；請先送出或收合後再更新。';}
+    return;
+  }
   state.loading=true;
   if(!quiet){$('#loadStatus').hidden=false;$('#loadStatus').textContent='正在讀取交流內容……';}
   try{
     const data=await loadWall();
+    if(!force && hasUnsentReply())return; // 網路請求期間若開始打字，也不能清除草稿
     state.posts=(data.posts||[]).filter(p=>p&&ROLE_LABELS[p.studentId]).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
     state.replies=(data.replies||[]).filter(r=>r&&r.parentId);
     renderStats();renderPosts();
@@ -120,7 +128,8 @@ function init() {
   refreshWall();
   // 課堂中自動更新；有使用者正在輸入回覆時不重建畫面。
   setInterval(()=>{
-    if(document.hidden || document.activeElement?.tagName==='TEXTAREA')return;
+    // 輸入暱稱時也要保留已展開的回覆；不能因 45 秒輪詢重建 DOM 而丟稿。
+    if(document.hidden || document.activeElement?.tagName==='TEXTAREA' || hasUnsentReply())return;
     refreshWall({quiet:true});
   },45000);
 }

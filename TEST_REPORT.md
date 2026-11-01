@@ -1,52 +1,34 @@
-# V7 功能測試紀錄（2026-11-01）
+# V7.1 回歸測試紀錄
 
-**測試方式**：Chromium 144 的實際 DOM、CSS、Web Audio 節點及角色操作檢查。由於目前測試環境會阻擋 `file://` 和 `localhost` 導覽，因此使用瀏覽器 `set_content()` 及動態注入相同 HTML、CSS、JS 的方式測試，非正式 GitHub Pages 部署。為能確定程式確實對四位角色發出語音，Web Speech 使用測試替身紀錄 `SpeechSynthesisUtterance` 的文字、語言與音量；無法從這裡實際聆聽中文 TTS 聲線。
+## 測試方式
 
-| 角色 | 背景聲源節點 | Web Audio 狀態 | 朗讀課文 | 三項活動推進 | 教師支持後背景聲維持 |
-|---|---|---|---|---|---|
-| 小晴／弱視 | 有 | running | 有 | 通過 | 有 |
-| 小廷／輕度聽損 | 有 | running | 有（低語音音量） | 通過 | 有 |
-| 小宇／ADHD | 有 | running | 有 | 通過 | 有 |
-| 小禾／閱讀理解困難 | 有 | running | 有 | 通過 | 有 |
+- 測試環境：無頭 Chromium（Playwright），模擬語音引擎，使用網站的本機示範資料。
+- 出於執行環境瀏覽限制，透過 `set_content` 載入 HTML、CSS，直接注入原始 API 與互動程式來測試前端 DOM 行為。
+- `tests/test_browser.py` 可重跑；結果寫入 `tests/test-results.json`。
 
-**小禾的文字**：朗讀時建置 31 個短暫消失字元、34 個跳動字元；畫重點與選擇題也都有字級動畫，教師支持後動畫字元為 0，手機顯示正常，減少視覺模擬特效後動畫停止。
+## 測試結果
 
-**音量測試**：四個角色的 Web Audio source 和 gain 都建立成功，AudioContext 狀態顯示 `running`；Web Speech 已被呼叫，非聽障角色的語音音量參數為 `0.92`、高干擾輕度聽損角色為 `0.22`，並保留中文語音優先選取。背景音能由音量滑桿控制，朗讀停止時不會連帶停止背景音。
+**56 項通過、0 項失敗、0 個頁面 JavaScript 例外**。
 
-**未驗證**：實際設備聽感、不同 OS 的中文語音品質、GitHub 正式部署與使用者的 Google Sheets 線上寫入。這些需要在實際上課用的瀏覽器、喇叭或耳機上測試。
+檢查範圍：
 
----
+- 四位學生 × 三項活動（朗讀、畫重點、選擇題），可前進到反思。
+- 四個角色都有環境音的啟動狀態及老師語音狀態。
+- 模擬分段朗讀的多段佇列，包含完整課文；停止語音不誤報中斷事件。
+- 小廷聽取指令選項作答後焦點及播放按鈕狀態。
+- 四個角色的教師支持可開啟／取消；各角色選重點後焦點不消失。
+- 選擇題兩次連續方向鍵可以改變選項並保留焦點。
+- 小禾的跳字特效預設關閉，可自主開啟。
+- 手機寬度 390px 的閱讀任務畫面及水平溢出檢查。
+- 交流牆示範回應顯示、回覆草稿遇到自動更新時不消失。
 
-# V6 測試紀錄（舊版留存）
+## 未驗證事項
 
-# V6 測試紀錄｜2026-10-31
+- 在真實 Chrome／Safari 的實際中文 TTS 聲音、每一片段是否可完整播放、及 iOS 靜音情況。
+- GitHub Pages 真正發布後的 URL、網域路由及靜態資產讀取。
+- 使用者 Google Apps Script 的公開部署權限，以及正式 Google Sheets 寫入與交流牆同步。
+- 真實螢幕報讀軟體（例如 NVDA、VoiceOver）的主觀操作可用性。
 
-## 已完成
+## 修補檔來源說明
 
-- JavaScript 語法：`assets/app.js`、`assets/api.js`、`assets/wall.js`、`assets/diagnostics.js` 均通過 `node --check`。
-- Apps Script `Code.gs`：以 Node VM 的 Google Sheets 物件模擬器執行 `setupSheets()`、`testWriteFromEditor()`、`doGet` 與 `doPost`，確認：
-  - `health` 回應版本 6.0.0 與實際分頁。
-  - 純文字 JSON POST 與表單 `payload` POST 均能解析。
-  - 以唯一 ID 檢查存在性、重送同一 ID 不重複新增。
-  - PRIVATE 回應只存入試算表、不進公開列表，VISIBLE 回應可列出。
-  - 無效資料在 `DeliveryLog` 產生 ERROR；正確資料有 RECEIVED / SAVED。
-  - JSONP callback 讀取格式正確。
-- Chromium 瀏覽器 DOM 操作（**模擬後端**；受環境限制，以 `set_content` 注入頁面及程式）：
-  - 四角色各自從首頁輸入暱稱 → 選學生 → 朗讀 → 畫重點 → 選擇題 → 反思送出，全部完成。
-  - ADHD 桌面遮擋、移開物品、重新找閱讀位置、碰桌、長指令、起身，皆能觸發；教師支持可移除遮擋。
-  - ADHD 手機尺寸（390 x 844）完成相同流程。
-  - 健康檢查 / 寫入 / ID 查核三階段 UI 成功（使用模擬回應）。
-  - 模擬第一次 no-cors POST 遺失時，備援表單 POST 使用同一 ID，後續查核可成功。
-
-## 尚未驗證
-
-- 使用者實際 Google Apps Script 端點的部署版本與訪客權限。
-- 實際 Google Sheets 的跨來源寫入與 Google Workspace 安全政策。
-- 真正兩台裝置之間的資料同步與公開交流牆。
-- 不同手機、瀏覽器的音量與環境聲聽感。
-
-**以上未驗證項目必須由使用者部署後，從 `diagnostics.html` 依步驟測試。**
-
-## 本版本與先前 ZIP 不同
-
-V5 壓縮檔缺漏了 `config.js`、`assets/api.js`、`assets/wall.js` 和 `google-apps-script/Code.gs` 等必要檔案。V6 ZIP 將它們全部補齊，並包含新的 `diagnostics.html` 與 `assets/diagnostics.js`。
+使用者提及的 `inclusive-game-fixes.zip` 未提供為可讀取的附件，因此本版本是**依據使用者提供的 6 項 bug 描述重作修補**，並非直接合併那份壓縮檔。

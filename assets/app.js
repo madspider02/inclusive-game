@@ -175,7 +175,7 @@ const state = {
   highlights: new Set(), quizAnswer: null, taskChecked: false, distractedCount: 0,
   reduceVisual: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), timerId: null, distractionTimeout: null, ambientOn:false,
   pendingRecord: null, hearingLevel:3, hearingAnswers:[null,null,null],
-  ambientLevel:.8, ambientOptOut:false,
+  ambientLevel:.8, ambientOptOut:false, readingVisualOptIn:false,
   adhd:{covered:true,recovered:false,lookAway:false,bumpCount:0,heardLong:false}, adhdTimers:[]
 };
 // 座位由使用者點選後啟動全部四位學生的環境聲；可隨時靜音並調整音量。
@@ -187,6 +187,8 @@ const VIEWS = ['welcomeView', 'classroomView', 'lessonView', 'reflectionView'];
 function showView(id) {
   VIEWS.forEach(view => { document.getElementById(view).hidden = view !== id; });
   state.view = id;
+  const heading = document.querySelector(`#${id} h1[id], #${id} h2[id]`);
+  if (heading) {heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   if (id !== 'lessonView') { stopAudio(); clearDistraction(); stopEnvironmentAudio(); }
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
@@ -229,6 +231,7 @@ function chooseRole(id) {
   $('#reflectionForm').reset();
   showView('lessonView');
   renderStage();
+  $('#lessonTitle').focus({preventScroll:true});
   startLessonAudio();
 }
 function teacherButtonLabel() {
@@ -413,52 +416,87 @@ function buildTeacherNarration() {
   const options=OPTIONS.map((x,i)=>`${'ABCD'[i]}：${x}`).join('。');
   return (state.roleId==='adhd'&&!supported?ADHD_LONG[2].full:TASKS[2].spoken)+'題目是：'+question+'。'+options;
 }
+// Chrome 的部分中文語音服務會在長句（例如一整篇課文）中斷。
+// 將朗讀稿切成短句、逗號片段，逐段排入 Web Speech 佇列，保留完整原文。
+function splitNarration(text, maxLength=32) {
+  const tokens = String(text).match(/[^，。！？；,!?;]+[，。！？；,!?;]?/g) || [String(text)];
+  const chunks=[];
+  let chunk='';
+  for (const token of tokens) {
+    const points=Array.from(token);
+    if(chunk && Array.from(chunk).length + points.length > maxLength) { chunks.push(chunk);chunk=''; }
+    if(points.length <= maxLength) {chunk += token;continue;}
+    for(let i=0;i<points.length;i+=maxLength){
+      const part=points.slice(i,i+maxLength).join('');
+      if(chunk){chunks.push(chunk);chunk='';}
+      chunks.push(part);
+    }
+  }
+  if(chunk) chunks.push(chunk);
+  return chunks.filter(Boolean);
+}
 function playAudio() {
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
     $('#audioBtn').textContent='裝置不支援老師語音';
-    setAudioStatus('這台裝置不支援語音合成。可以看畫面中的老師指令；環境聲仍可開啟。');
+    setAudioStatus('這台裝置不支援語音合成，請改由畫面中的文字提示參與活動。');
     return;
   }
-  if (teacherSpeechActive) {stopAudio();setAudioStatus('老師朗讀已停止；教室聲仍會持續。');return;}
+  if (teacherSpeechActive) {
+    stopAudio();
+    setAudioStatus('老師朗讀已停止；教室環境聲仍可持續播放。');
+    return;
+  }
   const hearing=state.roleId==='hearing';
   const supported=Boolean(state.supports[state.task]);
   const level=HEARING_LEVELS[state.hearingLevel];
-  const read=buildTeacherNarration();
-  // 若使用者先前關閉過環境音，播放老師朗讀時不強制重新開啟。
-  if(!state.ambientOptOut && !state.ambientOn) startEnvironmentAudio({auto:false});
-  const utterance=new SpeechSynthesisUtterance(read);
-  utterance.lang='zh-TW';
-  const voices=window.speechSynthesis.getVoices?.() || [];
-  const voice=voices.find(v=>v.lang.toLowerCase()==='zh-tw') || voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
-  if(voice)utterance.voice=voice;
-  utterance.rate=hearing&&!supported?1.02:state.roleId==='reading'&&supported?.80:.86;
-  utterance.volume=hearing?(supported?.94:level.teacherVolume):.92;
-  utterance.pitch=1;
+  const chunks=splitNarration(buildTeacherNarration());
+  if(!state.ambientOptOut && !state.ambientOn)startEnvironmentAudio({auto:false});
+  const voices=window.speechSynthesis.getVoices?.()||[];
+  const voice=voices.find(v=>v.lang.toLowerCase()==='zh-tw')||voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
   const seq=++speechSequence;
+  let part=0;
+  teacherSpeechActive=true;
+  $('#audioBtn').textContent='■ 停止老師語音';
+  if(hearing) $('#hearingWave')?.classList.add('is-playing');
+  setAudioStatus('正在啟動老師語音……');
   const cleanup=()=>{
     if(seq!==speechSequence)return;
     teacherSpeechActive=false;
     $('#audioBtn').textContent=teacherButtonLabel();
     $('#hearingWave')?.classList.remove('is-playing');
-    setAudioStatus(state.ambientOn?'老師朗讀結束，教室聲景仍在持續。':'老師朗讀結束。');
+    setAudioStatus(state.ambientOn?'老師朗讀結束，教室環境聲仍在持續。':'老師朗讀結束。');
   };
-  utterance.onstart=()=>{
-    if(seq!==speechSequence)return;
-    setAudioStatus(`老師正在${state.task===0?'朗讀〈鏡頭下的家鄉〉':state.task===1?'說明畫重點':'朗讀選擇題'}；環境聲${state.ambientOn?'同步播放':'已關閉'}。`);
+  const next=()=>{
+    if(seq!==speechSequence||!teacherSpeechActive)return;
+    if(part>=chunks.length){cleanup();return;}
+    const utterance=new SpeechSynthesisUtterance(chunks[part++]);
+    utterance.lang='zh-TW';
+    if(voice)utterance.voice=voice;
+    utterance.rate=hearing&&!supported?1.02:state.roleId==='reading'&&supported?.80:.86;
+    utterance.volume=hearing?(supported?.94:level.teacherVolume):.92;
+    utterance.pitch=1;
+    utterance.onstart=()=>{
+      if(seq!==speechSequence)return;
+      setAudioStatus(`老師正在${state.task===0?'朗讀課文':state.task===1?'說明畫重點':'朗讀題目'}（${part}/${chunks.length} 段）；教室環境聲${state.ambientOn?'同步播放':'已關閉'}。`);
+    };
+    utterance.onend=()=>{if(seq===speechSequence)next();};
+    utterance.onerror=e=>{
+      if(seq!==speechSequence)return;
+      if(['interrupted','canceled','cancelled'].includes(e.error)) {
+        cleanup();
+        setAudioStatus('老師語音已停止；教室環境聲仍可持續。');
+        return;
+      }
+      cleanup();
+      setAudioStatus('語音服務未能完成朗讀；請重試，或檢查裝置中文語音設定。');
+    };
+    try {window.speechSynthesis.speak(utterance);} catch(_) {
+      cleanup();
+      setAudioStatus('無法啟動老師語音，請點選按鈕重試。');
+    }
   };
-  utterance.onend=cleanup;
-  utterance.onerror=(e)=>{
-    cleanup();
-    setAudioStatus('語音引擎無法發聲，請按「播放老師語音」重試，或改用裝置內建中文語音。');
-  };
-  try{
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    teacherSpeechActive=true;
-    $('#audioBtn').textContent='■ 停止老師語音';
-    setAudioStatus('已送出朗讀要求，正在使用裝置的中文語音服務……');
-    if(hearing)$('#hearingWave')?.classList.add('is-playing');
-  }catch(err){cleanup();setAudioStatus('無法啟動老師語音。請點選按鈕重試。');}
+  try {window.speechSynthesis.cancel();next();}
+  catch(_) {cleanup();setAudioStatus('無法啟動老師語音，請點選按鈕重試。');}
 }
 function clearDistraction() {
   if (state.timerId) window.clearInterval(state.timerId);
@@ -634,7 +672,9 @@ function renderStage() {
   $('#sidebarName').textContent = role.name;
   $('#sidebarDesc').textContent = role.desc;
   $('#stageScene').parentElement.classList.remove('effect-vision','effect-hearing','effect-adhd','effect-reading','sim-effects-off');
-  if (!supported) $('#stageScene').parentElement.classList.add(`effect-${state.roleId}`);
+  if (!supported && (state.roleId!=='reading' || state.readingVisualOptIn)) $('#stageScene').parentElement.classList.add(`effect-${state.roleId}`);
+  const readingPanel=$('#readingModePanel');
+  if(readingPanel) {readingPanel.hidden=state.roleId!=='reading';$('#readingVisualToggle').checked=state.readingVisualOptIn;}
   if (state.reduceVisual) $('#stageScene').parentElement.classList.add('sim-effects-off');
   $('#motionToggle').setAttribute('aria-pressed', String(state.reduceVisual));
   $('#motionToggle').textContent = state.reduceVisual ? '已減少視覺模擬特效（點此恢復）' : '減少視覺模擬特效';
@@ -683,6 +723,7 @@ function renderHearingPanel() {
       next[supported?'after':'before']={value:i,correct:i===task.correct};
       state.hearingAnswers[state.task]=next;
       renderHearingPanel();
+      $$('#hearingChoices button')[i]?.focus({preventScroll:true});
     });
     root.appendChild(btn);
   });
@@ -706,12 +747,12 @@ function renderHearingPanel() {
     feedback.textContent='現在可讀到完整要求。對照老師說的內容，再重新選一次即可；這不是能力測驗。';
     feedback.className='hearing-result is-missed';
   }
-  $('#audioBtn').textContent=teacherButtonLabel();
+  if(!teacherSpeechActive)$('#audioBtn').textContent=teacherButtonLabel();
 }
 // 閱讀理解困難的視覺干擾只是教學「符號」，不是障礙者眼前的真實視覺重建。
 // 每幾個字以群組短暫隱去；其他字明顯跳動，並保持原版語音閱讀、作答語意與畫面佔位。
 function setReadingText(node,content,sequence=0) {
-  if (state.roleId!=='reading' || state.supports[state.task] || state.reduceVisual){node.textContent=content;return;}
+  if (state.roleId!=='reading' || state.supports[state.task] || state.reduceVisual || !state.readingVisualOptIn){node.textContent=content;return;}
   node.setAttribute('aria-label',content);
   const visual=document.createElement('span');visual.className='reading-visual';visual.setAttribute('aria-hidden','true');
   [...content].forEach((ch,i)=>{
@@ -771,7 +812,10 @@ function renderWorkspace() {
       button.addEventListener('click',() => { if (state.taskChecked) return;
         if (state.highlights.has(i)) state.highlights.delete(i);
         else if (state.highlights.size<2) state.highlights.add(i);
-        renderWorkspace(); renderPrimaryAction();
+        button.classList.toggle('is-selected',state.highlights.has(i));
+        button.setAttribute('aria-pressed',String(state.highlights.has(i)));
+        $('#workspaceContent .highlight-counter').textContent=`已選取 ${state.highlights.size} / 2 句`;
+        renderPrimaryAction();
       }); list.appendChild(button);
     });
     root.appendChild(list);
@@ -786,7 +830,7 @@ function renderWorkspace() {
       const lab = document.createElement('label'); lab.className = `quiz-option ${state.quizAnswer===i?'is-selected':''}`;
       const input = document.createElement('input'); input.type='radio'; input.name='classroomQuiz'; input.value=String(i);
       input.checked = state.quizAnswer===i; input.disabled = state.taskChecked;
-      input.addEventListener('change',() => { state.quizAnswer=i; renderWorkspace(); renderPrimaryAction(); });
+      input.addEventListener('change',() => { state.quizAnswer=i; $$('#workspaceContent .quiz-option').forEach((el,k)=>el.classList.toggle('is-selected',k===i)); renderPrimaryAction(); });
       const letter = document.createElement('span'); letter.className='option-letter'; letter.textContent = `${'ABCD'[i]}.`;
       const text = document.createElement('span'); setReadingText(text,answer,i+1);
       if(state.roleId==='reading')lab.setAttribute('aria-label',`${'ABCD'[i]}：${answer}`);
@@ -812,7 +856,13 @@ function renderSupports() {
     const icon=document.createElement('span');icon.className='support-icon';icon.textContent=active?'✓':'+';
     const label=document.createElement('span');label.textContent=support.label;
     btn.append(icon,label);
-    btn.addEventListener('click',()=>{state.supports[state.task]=index+1;renderStage();startLessonAudio();});
+    btn.addEventListener('click',()=>{
+      state.supports[state.task]=active?null:index+1;
+      if(state.roleId==='adhd'&&!state.supports[state.task])resetAdhd();
+      renderStage();
+      $$('#supportChoices button')[index]?.focus({preventScroll:true});
+      startLessonAudio();
+    });
     root.appendChild(btn);
   });
   const chosen = state.supports[state.task];
@@ -921,7 +971,7 @@ function init() {
     if (!name) { $('#participantName').focus(); return; }
     state.nickname=name; sessionStorage.setItem('classroomNickname',name);
     $('#participantChip').textContent=`體驗者：${name}`;
-    showView('classroomView'); $('#classroomMap').focus({preventScroll:true});
+    showView('classroomView');
   });
   $$('[data-student]').forEach(btn=>btn.addEventListener('click',()=>chooseRole(btn.dataset.student)));
   $$('[data-move]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -937,7 +987,20 @@ function init() {
     else if (event.key==='Enter' && (document.activeElement===$('#classroomMap') || document.activeElement===document.body)) { event.preventDefault(); chooseNear(); }
   });
   $('#backToClass').addEventListener('click',()=>showView('classroomView'));
-  $('#motionToggle').addEventListener('click',()=>{state.reduceVisual=!state.reduceVisual;renderStage();});
+  $('#motionToggle').addEventListener('click',()=>{
+    state.reduceVisual=!state.reduceVisual;
+    const scene=$('#stageScene').parentElement;
+    scene.classList.toggle('sim-effects-off',state.reduceVisual);
+    $('#motionToggle').setAttribute('aria-pressed',String(state.reduceVisual));
+    $('#motionToggle').textContent=state.reduceVisual?'已減少視覺模擬特效（點此恢復）':'減少視覺模擬特效';
+    if(state.roleId==='reading')renderWorkspace();
+  });
+  $('#readingVisualToggle')?.addEventListener('change', event=>{
+    state.readingVisualOptIn=event.target.checked;
+    const scene=$('#stageScene').parentElement;
+    scene.classList.toggle('effect-reading',state.roleId==='reading' && !state.supports[state.task] && state.readingVisualOptIn);
+    renderWorkspace();
+  });
   $('#audioBtn').addEventListener('click',playAudio);
   $('#ambientToggle').addEventListener('click',toggleEnvironmentAudio);
   $('#ambientVolume').addEventListener('input',event=>{

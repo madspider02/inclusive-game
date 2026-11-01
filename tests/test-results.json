@@ -1,0 +1,300 @@
+{
+  "checks": 56,
+  "passed": 56,
+  "failed": [],
+  "pageErrors": [],
+  "results": [
+    {
+      "name": "vision 入課後焦點位於標題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 教室環境音狀態",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 老師語音有啟動",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "長篇朗讀已分段",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "完整朗讀分成數段",
+      "ok": true,
+      "detail": 6
+    },
+    {
+      "name": "五段原文均包含於朗讀",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "停止語音無誤報故障",
+      "ok": true,
+      "detail": "老師朗讀已停止；教室環境聲仍可持續播放。"
+    },
+    {
+      "name": "vision 教師支持可啟用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 教師支持可取消",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 進入畫重點",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 畫重點焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 進入選擇題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 選擇題焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "vision 選擇題方向鍵連續有效",
+      "ok": true,
+      "detail": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "name": "vision 反思頁可見",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 入課後焦點位於標題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 教室環境音狀態",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 老師語音有啟動",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "聽障選擇保留焦點",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "聽障播放中按鈕不被覆寫",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 教師支持可啟用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 教師支持可取消",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 進入畫重點",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 畫重點焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 進入選擇題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 選擇題焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "hearing 選擇題方向鍵連續有效",
+      "ok": true,
+      "detail": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "name": "hearing 反思頁可見",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 入課後焦點位於標題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 教室環境音狀態",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 老師語音有啟動",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 教師支持可啟用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 教師支持可取消",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 進入畫重點",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 畫重點焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 進入選擇題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 選擇題焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "adhd 選擇題方向鍵連續有效",
+      "ok": true,
+      "detail": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "name": "adhd 反思頁可見",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 入課後焦點位於標題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 教室環境音狀態",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 老師語音有啟動",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "閱讀視覺動畫預設關閉",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "閱讀動畫可啟用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 教師支持可啟用",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 教師支持可取消",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 進入畫重點",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 畫重點焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 進入選擇題",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 選擇題焦點保留",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "reading 選擇題方向鍵連續有效",
+      "ok": true,
+      "detail": [
+        "2",
+        "3"
+      ]
+    },
+    {
+      "name": "reading 反思頁可見",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "手機版閱讀視覺選項可見",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "手機版未出現水平溢出",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "交流牆測試資料可顯示",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "交流牆 45 秒刷新不清除草稿",
+      "ok": true,
+      "detail": "我還沒送出的很重要的回覆"
+    }
+  ]
+}

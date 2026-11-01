@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#153f46">
   <meta name="description" content="一堂國語課，四種不同的學習處境。走進教室，從學生的座位重新思考融合教育的班級經營與教學調整。">
   <title>換個位置，看見學習｜融合教育沉浸式教室</title>
-  <link rel="stylesheet" href="./assets/style.css?v=6">
+  <link rel="stylesheet" href="./assets/style.css?v=7.1">
   <script src="./config.js"></script>
-  <script type="module" src="./assets/app.js?v=6"></script>
+  <script type="module" src="./assets/app.js?v=7.1"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳至主要內容</a>
@@ -125,7 +125,10 @@
               <p class="hearing-footnote">這是「嘈雜教室造成口語訊息漏接」的教學示意，並非聽力檢查或輕度聽損的聲學重建。按下播放才會出聲；請由較低裝置音量開始，可隨時停止。</p>
             </section>
             <p id="workspaceDirection" class="workspace-direction"></p>
-            <div id="workspaceContent" class="workspace-content"></div>
+            <div id="readingModePanel" class="reading-mode-panel" hidden>
+              <p>閱讀理解困難主要涉及文意整合、推論與抓重點。字體跳動不是這類學生共同的視覺感受。</p>
+              <label><input id="readingVisualToggle" type="checkbox"> 選擇體驗：象徵性的字體跳動與消失（可隨時關閉）</label>
+            </div><div id="workspaceContent" class="workspace-content"></div>
             <div id="distractionNotice" class="distraction-notice" hidden><span id="distractionText"></span><button id="dismissDistraction" type="button">把注意力拉回來</button></div>
             <div id="taskFeedback" class="task-feedback" role="status" hidden></div>
           </div>
@@ -142,6 +145,6 @@
       </div>
     </section>
   </main>
-  <footer class="site-footer"><span>換個位置，看見學習 · 教師專業學習情境</span><span>網頁設計者：國教院黃彥融副研究員 · <a href="./diagnostics.html">連線診斷</a></span></footer>
+  <footer class="site-footer"><span>換個位置，看見學習 · 教師專業學習情境</span><span>網頁設計者：國教院黃彥融副研究員</span></footer>
 </body>
 </html>
