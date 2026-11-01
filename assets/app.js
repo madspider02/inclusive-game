@@ -67,9 +67,9 @@ const HEARING_TASKS = [
   }
 ];
 const HEARING_LEVELS = {
-  1:{label:'低干擾', teacherVolume:.56, ambientGain:.065, hint:'周圍偶有翻書聲，重要字詞仍有機會漏接。'},
-  2:{label:'較吵教室', teacherVolume:.35, ambientGain:.12, hint:'老師離座位較遠，翻頁、走動和同學交談一起出現。'},
-  3:{label:'高干擾教室', teacherVolume:.22, ambientGain:.20, hint:'老師轉身說明，周遭連續出現雜音，關鍵活動要求更容易被遮蔽。'}
+  1:{label:'低干擾', teacherVolume:.56, ambientGain:.17, hint:'周圍偶有翻書聲，重要字詞仍有機會漏接。'},
+  2:{label:'較吵教室', teacherVolume:.35, ambientGain:.25, hint:'老師離座位較遠，翻頁、走動和同學交談一起出現。'},
+  3:{label:'高干擾教室', teacherVolume:.22, ambientGain:.34, hint:'老師轉身說明，周遭連續出現雜音，關鍵活動要求更容易被遮蔽。'}
 };
 // 學習任務會因教室環境產生不同阻礙，但不代表同類障礙者的經驗完全一致。
 const MOMENTS = {
@@ -175,11 +175,14 @@ const state = {
   highlights: new Set(), quizAnswer: null, taskChecked: false, distractedCount: 0,
   reduceVisual: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), timerId: null, distractionTimeout: null, ambientOn:false,
   pendingRecord: null, hearingLevel:3, hearingAnswers:[null,null,null],
+  ambientLevel:.8, ambientOptOut:false,
   adhd:{covered:true,recovered:false,lookAway:false,bumpCount:0,heardLong:false}, adhdTimers:[]
 };
-// 只有使用者點擊「開啟教室環境聲」才會播放；全程可關閉。
+// 座位由使用者點選後啟動全部四位學生的環境聲；可隨時靜音並調整音量。
+// 沒有使用外部錄音或授權不明的聲音素材，採本機合成的課堂聲景。
 const environmentAudio = { context:null, source:null, gain:null, filter:null, lfo:null, lfoGain:null, eventTimer:null, auto:false, manual:false };
 let speechSequence=0;
+let teacherSpeechActive=false;
 const VIEWS = ['welcomeView', 'classroomView', 'lessonView', 'reflectionView'];
 function showView(id) {
   VIEWS.forEach(view => { document.getElementById(view).hidden = view !== id; });
@@ -226,14 +229,29 @@ function chooseRole(id) {
   $('#reflectionForm').reset();
   showView('lessonView');
   renderStage();
+  startLessonAudio();
+}
+function teacherButtonLabel() {
+  if (state.task===0) return '♫ 播放老師朗讀完整課文';
+  if (state.task===1) return '♫ 播放老師畫重點指令';
+  return '♫ 播放老師讀題與選項';
+}
+function setAudioStatus(message) {
+  const el=$('#audioStatus');if(el)el.textContent=message;
 }
 function stopAudio() {
+  teacherSpeechActive=false;
   speechSequence += 1;
   try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (_) { /* unavailable */ }
-  const btn = $('#audioBtn');
-  if (btn) btn.textContent = state.roleId === 'hearing' ? '♫ 播放老師指令＋教室聲' : '♫ 播放老師語音';
+  const btn = $('#audioBtn');if(btn)btn.textContent=teacherButtonLabel();
   $('#hearingWave')?.classList.remove('is-playing');
+  // 語音停止不能將教室環境聲一併關掉：所有學生的聲景應持續存在。
   if (environmentAudio.auto && !environmentAudio.manual) stopEnvironmentAudio();
+}
+function startLessonAudio() {
+  // 點選座位 / 前往下一項活動都是使用者手勢，符合瀏覽器播放限制。
+  if (!state.ambientOptOut && !state.ambientOn) startEnvironmentAudio({auto:false});
+  playAudio();
 }
 function stopEnvironmentAudio() {
   const a = environmentAudio;
@@ -255,27 +273,44 @@ function stopEnvironmentAudio() {
   state.ambientOn=false;
   const btn=$('#ambientToggle');
   if(btn){btn.textContent='◉ 開啟教室環境聲';btn.setAttribute('aria-pressed','false');}
+  setAudioStatus('教室環境聲已關閉。點選可重新開啟。');
 }
-// 分散的輕微翻書、桌面摩擦聲：由緩起緩落的合成聲組成，避免突發尖銳音效。
+// 每隔一段時間輪流出現翻書、椅腳摩擦、走動與模糊交談。
+// 合成聲採包絡減弱，避免尖銳爆音。沒有對外音檔依賴。
+let classroomEventIndex=0;
 function playClassroomRustle() {
   const a=environmentAudio;
-  if(!a.context || !a.source)return;
+  if(!a.context || !a.source || !state.ambientOn) return;
   const ctx=a.context;
-  const dur=.27;
-  const len=Math.floor(ctx.sampleRate*dur);
+  const kinds=['page','murmur','step','page','chair','murmur'];
+  const kind=kinds[classroomEventIndex++ % kinds.length];
+  const durations={page:.6,murmur:1.18,step:.45,chair:.76};
+  const duration=durations[kind];
+  const len=Math.floor(ctx.sampleRate*duration);
   const buffer=ctx.createBuffer(1,len,ctx.sampleRate);
   const data=buffer.getChannelData(0);
+  let smoothed=0;
   for(let i=0;i<len;i++){
-    const position=i/Math.max(1,len-1);
-    const env=Math.pow(Math.sin(Math.PI*position),1.8);
-    data[i]=(Math.random()*2-1)*.27*env;
+    const t=i/ctx.sampleRate;
+    const x=i/Math.max(1,len-1);
+    const fade=Math.pow(Math.sin(Math.PI*x),1.2);
+    smoothed=smoothed*.84+(Math.random()*2-1)*.16;
+    let value=smoothed;
+    if(kind==='page')value+=(Math.random()*2-1)*.42*(.45+.55*Math.sin(x*10*Math.PI)**2);
+    if(kind==='murmur')value+=.38*Math.sin(2*Math.PI*(138+11*Math.sin(t*7))*t)*(.35+.65*Math.sin(t*8)**2);
+    if(kind==='step')value+=.75*Math.sin(2*Math.PI*78*t)*Math.exp(-t*11);
+    if(kind==='chair')value+=.23*Math.sin(2*Math.PI*(240+190*x)*t);
+    data[i]=Math.max(-1,Math.min(1,value*fade));
   }
   const source=ctx.createBufferSource();source.buffer=buffer;
-  const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1850;
+  const filter=ctx.createBiquadFilter();
+  filter.type=kind==='murmur'?'bandpass':'lowpass';
+  filter.frequency.value=kind==='murmur'?650:kind==='page'?2300:kind==='chair'?1250:380;
+  filter.Q.value=.55;
   const gain=ctx.createGain();
-  gain.gain.value=state.roleId==='hearing'&&!state.supports[state.task] ? .15 : .045;
+  gain.gain.value={page:.26,murmur:.18,step:.22,chair:.19}[kind] * state.ambientLevel;
   source.connect(filter);filter.connect(gain);gain.connect(ctx.destination);
-  source.onended=()=>{try{source.disconnect();filter.disconnect();gain.disconnect();}catch(_){}};
+  source.onended=()=>{try{source.disconnect();filter.disconnect();gain.disconnect();}catch(_){} };
   source.start();
 }
 // 由使用者點擊啟動，不自動播放。使用限幅噪聲避免尖銳音效。
@@ -308,7 +343,7 @@ function startEnvironmentAudio({auto=false}={}) {
     }
     const src=context.createBufferSource();src.buffer=buffer;src.loop=true;
     const filter=context.createBiquadFilter();filter.type='bandpass';filter.frequency.value=1000;filter.Q.value=.65;
-    const gain=context.createGain();gain.gain.value=.08;
+    const gain=context.createGain();gain.gain.value=.18;
     const lfo=context.createOscillator();lfo.type='sine';lfo.frequency.value=.38;
     const lfoGain=context.createGain();lfoGain.gain.value=.016;
     lfo.connect(lfoGain);lfoGain.connect(gain.gain);
@@ -316,10 +351,13 @@ function startEnvironmentAudio({auto=false}={}) {
     src.start();lfo.start();
     Object.assign(a,{source:src,filter,gain,lfo,lfoGain,auto,manual:!auto});
     state.ambientOn=true;
-    a.eventTimer=window.setInterval(playClassroomRustle,2500);
+    a.eventTimer=window.setInterval(playClassroomRustle,1800);
+    // 讓學生剛進入教室就能感覺到有人翻書、走動。
+    playClassroomRustle();
     refreshEnvironmentAudio();
     $('#ambientToggle').textContent='■ 關閉教室環境聲';
     $('#ambientToggle').setAttribute('aria-pressed','true');
+    setAudioStatus('教室聲景正在播放：翻書、腳步、椅子移動與模糊交談；可調整音量。');
     return true;
   } catch(err) {
     console.warn('ambient audio failed',err);
@@ -329,64 +367,98 @@ function startEnvironmentAudio({auto=false}={}) {
   }
 }
 function toggleEnvironmentAudio() {
-  if (state.ambientOn) { stopEnvironmentAudio(); return; }
+  if (state.ambientOn) {state.ambientOptOut=true;stopEnvironmentAudio();return;}
+  state.ambientOptOut=false;
   startEnvironmentAudio({auto:false});
 }
 function refreshEnvironmentAudio() {
   const a=environmentAudio;
   if(!a.gain)return;
   const hearing = state.roleId==='hearing'&&!state.supports[state.task];
-  const target=hearing ? HEARING_LEVELS[state.hearingLevel].ambientGain : .05;
+  const base=hearing ? HEARING_LEVELS[state.hearingLevel].ambientGain
+    : state.roleId==='adhd'&&!state.supports[state.task] ? .25
+    : state.roleId==='reading' ? .20
+    : state.roleId==='vision' ? .22
+    : .14;
+  const target=base*state.ambientLevel;
   const now=a.context?.currentTime || 0;
   a.gain.gain.cancelScheduledValues(now);
   a.gain.gain.setTargetAtTime(target,now,.22);
 }
+// 四位學生都聽到老師朗讀，不只播放一句任務指令。
+// 朗讀活動播放使用者提供的整篇課文；畫重點與選擇題則讀當次任務內容。
+function buildTeacherNarration() {
+  const supported=Boolean(state.supports[state.task]);
+  if(state.roleId==='hearing'){
+    const task=HEARING_TASKS[state.task];
+    let text=supported?task.full:task.samples[state.hearingLevel-1];
+    if(state.task===0){
+      // 老師實際仍在朗讀同一篇課文；不會因學生聽損而改念斷裂詞句。
+      // 沒提供支持時，用較低語音音量與更明顯的教室聲造成訊息遮蔽。
+      // 課堂指令本身仍以片段訊息呈現，讓體驗者核對漏聽的任務要求。
+      text+='。'+EXCERPT.join('');
+    } else if(supported && state.task===2){
+      text+='。題目是：'+$('#workspaceContent .quiz-question')?.textContent+'。'+OPTIONS.map((o,i)=>`${'ABCD'[i]}：${o}`).join('。');
+    }
+    return text;
+  }
+  if(state.task===0){
+    const lead='好，請跟著老師一起朗讀〈鏡頭下的家鄉〉。';
+    return lead+'。'+EXCERPT.join('');
+  }
+  if(state.task===1){
+    return state.roleId==='adhd'&&!supported ? ADHD_LONG[1].full : TASKS[1].spoken+'請大家先看第一句，再找作者寫出溫暖感受的句子。';
+  }
+  const question='陽光照耀滿園柳丁的景象，如金粉從天上落下般美麗。作者使用這個比喻，主要想表達什麼？';
+  const options=OPTIONS.map((x,i)=>`${'ABCD'[i]}：${x}`).join('。');
+  return (state.roleId==='adhd'&&!supported?ADHD_LONG[2].full:TASKS[2].spoken)+'題目是：'+question+'。'+options;
+}
 function playAudio() {
-  if (!('speechSynthesis' in window)) {
-    $('#audioBtn').textContent = '此瀏覽器無法語音播放';
-    $('#hearingResult').textContent='這台裝置無法播放語音。仍可使用片段指令與任務選擇，討論所缺的資訊。';
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+    $('#audioBtn').textContent='裝置不支援老師語音';
+    setAudioStatus('這台裝置不支援語音合成。可以看畫面中的老師指令；環境聲仍可開啟。');
     return;
   }
-  if (window.speechSynthesis.speaking) { stopAudio(); return; }
-  const hearing = state.roleId==='hearing';
-  const supported = Boolean(state.supports[state.task]);
+  if (teacherSpeechActive) {stopAudio();setAudioStatus('老師朗讀已停止；教室聲仍會持續。');return;}
+  const hearing=state.roleId==='hearing';
+  const supported=Boolean(state.supports[state.task]);
   const level=HEARING_LEVELS[state.hearingLevel];
-  let read=state.task===0?`${TASKS[0].spoken}。${EXCERPT.join('')}`:TASKS[state.task].spoken;
-  if(hearing){
-    // 由音量比例、較難聽完整的句段、背景聲三者共同構成課堂溝通障礙。
-    read = supported ? HEARING_TASKS[state.task].full : HEARING_TASKS[state.task].samples[state.hearingLevel-1];
-    if (state.task === 0) {
-      // 朗讀活動不只播放指令，也要在對照前後聽到課文語句。
-      const passage = supported
-        ? EXCERPT.slice(0,3).join('')
-        : [
-            '這裡的十一月。陽光照耀滿園柳丁的景象。如金粉從天上落下般美麗。',
-            '十一月。陽光照耀柳丁園。金粉。冷風。農人的希望。',
-            '十一月。柳丁園。陽光。農人。'
-          ][state.hearingLevel-1];
-      read += '。' + passage;
-    }
-    startEnvironmentAudio({auto:true});
-  }
-  const utterance = new SpeechSynthesisUtterance(read);
-  utterance.lang = 'zh-TW';
-  utterance.rate = hearing && !supported ? 1.05 : .88;
-  utterance.volume = hearing ? (supported ? .92 : level.teacherVolume) : .92;
+  const read=buildTeacherNarration();
+  // 若使用者先前關閉過環境音，播放老師朗讀時不強制重新開啟。
+  if(!state.ambientOptOut && !state.ambientOn) startEnvironmentAudio({auto:false});
+  const utterance=new SpeechSynthesisUtterance(read);
+  utterance.lang='zh-TW';
+  const voices=window.speechSynthesis.getVoices?.() || [];
+  const voice=voices.find(v=>v.lang.toLowerCase()==='zh-tw') || voices.find(v=>v.lang.toLowerCase().startsWith('zh'));
+  if(voice)utterance.voice=voice;
+  utterance.rate=hearing&&!supported?1.02:state.roleId==='reading'&&supported?.80:.86;
+  utterance.volume=hearing?(supported?.94:level.teacherVolume):.92;
   utterance.pitch=1;
   const seq=++speechSequence;
   const cleanup=()=>{
     if(seq!==speechSequence)return;
-    $('#audioBtn').textContent = hearing ? '♫ 再聽一次老師指令' : '♫ 播放老師語音';
+    teacherSpeechActive=false;
+    $('#audioBtn').textContent=teacherButtonLabel();
     $('#hearingWave')?.classList.remove('is-playing');
-    if(environmentAudio.auto && !environmentAudio.manual) stopEnvironmentAudio();
+    setAudioStatus(state.ambientOn?'老師朗讀結束，教室聲景仍在持續。':'老師朗讀結束。');
   };
-  utterance.onend=cleanup;utterance.onerror=cleanup;
+  utterance.onstart=()=>{
+    if(seq!==speechSequence)return;
+    setAudioStatus(`老師正在${state.task===0?'朗讀〈鏡頭下的家鄉〉':state.task===1?'說明畫重點':'朗讀選擇題'}；環境聲${state.ambientOn?'同步播放':'已關閉'}。`);
+  };
+  utterance.onend=cleanup;
+  utterance.onerror=(e)=>{
+    cleanup();
+    setAudioStatus('語音引擎無法發聲，請按「播放老師語音」重試，或改用裝置內建中文語音。');
+  };
   try{
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
+    teacherSpeechActive=true;
     $('#audioBtn').textContent='■ 停止老師語音';
-    if(hearing) $('#hearingWave')?.classList.add('is-playing');
-  }catch(err){cleanup();}
+    setAudioStatus('已送出朗讀要求，正在使用裝置的中文語音服務……');
+    if(hearing)$('#hearingWave')?.classList.add('is-playing');
+  }catch(err){cleanup();setAudioStatus('無法啟動老師語音。請點選按鈕重試。');}
 }
 function clearDistraction() {
   if (state.timerId) window.clearInterval(state.timerId);
@@ -634,7 +706,32 @@ function renderHearingPanel() {
     feedback.textContent='現在可讀到完整要求。對照老師說的內容，再重新選一次即可；這不是能力測驗。';
     feedback.className='hearing-result is-missed';
   }
-  $('#audioBtn').textContent=supported?'♫ 播放清楚指令＋較安靜環境':'♫ 播放受干擾指令＋教室聲';
+  $('#audioBtn').textContent=teacherButtonLabel();
+}
+// 閱讀理解困難的視覺干擾只是教學「符號」，不是障礙者眼前的真實視覺重建。
+// 每幾個字以群組短暫隱去；其他字明顯跳動，並保持原版語音閱讀、作答語意與畫面佔位。
+function setReadingText(node,content,sequence=0) {
+  if (state.roleId!=='reading' || state.supports[state.task] || state.reduceVisual){node.textContent=content;return;}
+  node.setAttribute('aria-label',content);
+  const visual=document.createElement('span');visual.className='reading-visual';visual.setAttribute('aria-hidden','true');
+  [...content].forEach((ch,i)=>{
+    const glyph=document.createElement('span');glyph.textContent=ch;
+    const group=Math.floor((i+sequence*5)/9);
+    const isPunctuation=/[\s，。！？「」〈〉、：；（）]/.test(ch);
+    // 兩字一組突然消失，其他文字交錯大幅跳動。每組錯開相位以免整頁閃動。
+    if(!isPunctuation && ((i+sequence*5)%9===1 || (i+sequence*5)%9===2)){
+      glyph.className='reading-glyph reading-vanish';
+      glyph.style.setProperty('--phase',`${-(group*1.1 % 5.8)}s`);
+    } else if(!isPunctuation && (i+sequence*3)%3===0){
+      glyph.className='reading-glyph reading-hop';
+      glyph.style.setProperty('--phase',`${-((i*0.27+sequence*.8)%2.6)}s`);
+    } else glyph.className='reading-glyph';
+    visual.appendChild(glyph);
+  });
+  const screenReader=document.createElement('span');
+  screenReader.className='visually-hidden';
+  screenReader.textContent=content;
+  node.replaceChildren(screenReader,visual);
 }
 function renderWorkspace() {
   const root = $('#workspaceContent');
@@ -644,14 +741,15 @@ function renderWorkspace() {
     const paper = document.createElement('div'); paper.className = 'reading-paper';
     const paragraph1 = document.createElement('p'); const paragraph2 = document.createElement('p');
     EXCERPT.forEach((sentence,i) => {
-      const span = document.createElement('span'); span.className = 'sentence'; span.textContent = sentence;
+      const span = document.createElement('span'); span.className = 'sentence';
+      setReadingText(span, sentence, i);
       (i<3 ? paragraph1 : paragraph2).appendChild(span);
     });
     paper.append(paragraph1,paragraph2);
     root.appendChild(paper);
     if (state.roleId === 'reading' && !state.supports[state.task]) {
       const reminder = document.createElement('p'); reminder.className = 'simulation-hint';
-      reminder.textContent = '提醒：字句微幅漂動只是用來視覺化閱讀負荷的教學比喻，不代表所有閱讀困難學生都會看到文字漂移。';
+      reminder.textContent = '視覺化示意：部分字會明顯跳動或短暫消失，意在凸顯閱讀與語意整合的負荷，不表示閱讀理解困難者真的會看到字消失；可使用「減少視覺模擬特效」停止。';
       root.appendChild(reminder);
     }
   } else if (state.task === 1) {
@@ -666,7 +764,9 @@ function renderWorkspace() {
       button.type = 'button'; button.className = `sentence-button ${state.highlights.has(i)?'is-selected':''}`;
       button.setAttribute('aria-pressed',String(state.highlights.has(i))); button.disabled = state.taskChecked;
       const mark = document.createElement('span'); mark.className='sentence-check'; mark.textContent='✓'; mark.setAttribute('aria-hidden','true');
-      const body = document.createElement('span'); body.className = 'sentence-body'; body.textContent = sentence;
+      const body = document.createElement('span'); body.className = 'sentence-body';
+      setReadingText(body, sentence, i);
+      if(state.roleId==='reading')button.setAttribute('aria-label',`選取句子：${sentence}`);
       button.append(mark,body);
       button.addEventListener('click',() => { if (state.taskChecked) return;
         if (state.highlights.has(i)) state.highlights.delete(i);
@@ -679,7 +779,7 @@ function renderWorkspace() {
     counter.textContent = `已選取 ${state.highlights.size} / 2 句`; root.appendChild(counter);
   } else if (state.task === 2) {
     const question = document.createElement('div'); question.className = 'quiz-question';
-    question.textContent = '「陽光照耀滿園柳丁的景象，如金粉從天上落下般美麗。」作者使用這個比喻，主要想表達什麼？';
+    setReadingText(question,'「陽光照耀滿園柳丁的景象，如金粉從天上落下般美麗。」作者使用這個比喻，主要想表達什麼？',0);
     root.appendChild(question);
     const opts = document.createElement('div'); opts.className='quiz-options';
     OPTIONS.forEach((answer,i) => {
@@ -688,7 +788,8 @@ function renderWorkspace() {
       input.checked = state.quizAnswer===i; input.disabled = state.taskChecked;
       input.addEventListener('change',() => { state.quizAnswer=i; renderWorkspace(); renderPrimaryAction(); });
       const letter = document.createElement('span'); letter.className='option-letter'; letter.textContent = `${'ABCD'[i]}.`;
-      const text = document.createElement('span'); text.textContent=answer;
+      const text = document.createElement('span'); setReadingText(text,answer,i+1);
+      if(state.roleId==='reading')lab.setAttribute('aria-label',`${'ABCD'[i]}：${answer}`);
       lab.append(input,letter,text); opts.appendChild(lab);
     });
     root.appendChild(opts);
@@ -711,7 +812,7 @@ function renderSupports() {
     const icon=document.createElement('span');icon.className='support-icon';icon.textContent=active?'✓':'+';
     const label=document.createElement('span');label.textContent=support.label;
     btn.append(icon,label);
-    btn.addEventListener('click',()=>{state.supports[state.task]=index+1; renderStage();});
+    btn.addEventListener('click',()=>{state.supports[state.task]=index+1;renderStage();startLessonAudio();});
     root.appendChild(btn);
   });
   const chosen = state.supports[state.task];
@@ -753,7 +854,7 @@ function nextStage() {
     if (!state.taskChecked) { if (state.quizAnswer===null) return; state.taskChecked=true; renderTaskFeedback(); renderWorkspace(); renderPrimaryAction(); return; }
     showView('reflectionView'); renderReflection(); return;
   }
-  renderStage(); window.scrollTo({top:0,behavior:'auto'});
+  renderStage(); startLessonAudio(); window.scrollTo({top:0,behavior:'auto'});
 }
 function skipStage() {
   if (!state.skipped.includes(state.task)) state.skipped.push(state.task);
@@ -764,7 +865,7 @@ function skipStage() {
   } else {
     showView('reflectionView'); renderReflection(); return;
   }
-  renderStage();
+  renderStage(); startLessonAudio();
 }
 function renderReflection() {
   const role=currentRole();
@@ -839,6 +940,11 @@ function init() {
   $('#motionToggle').addEventListener('click',()=>{state.reduceVisual=!state.reduceVisual;renderStage();});
   $('#audioBtn').addEventListener('click',playAudio);
   $('#ambientToggle').addEventListener('click',toggleEnvironmentAudio);
+  $('#ambientVolume').addEventListener('input',event=>{
+    state.ambientLevel=Number(event.target.value)/100;
+    $('#ambientVolumeLabel').textContent=event.target.value+'%';
+    refreshEnvironmentAudio();
+  });
   $$('#hearingLevelControls button').forEach(btn=>btn.addEventListener('click',()=>{
     if (state.roleId!=='hearing') return;
     state.hearingLevel=Number(btn.dataset.hearingLevel);

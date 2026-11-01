@@ -85,7 +85,7 @@
             <button type="button" data-student="adhd"><span class="avatar-circle coral">宇</span><span><b>小宇</b><small>ADHD · 課堂干擾與注意力轉移</small></span><span>↗</span></button>
             <button type="button" data-student="reading"><span class="avatar-circle purple">禾</span><span><b>小禾</b><small>閱讀理解困難 · 文字與語意處理</small></span><span>↗</span></button>
           </div>
-          <p class="guide-note">每個人的狀況都具有個別差異；這裡以四個具體教室情境，引導討論可調整的環境與教學做法。</p>
+          <p class="guide-note">點選學生座位時會啟動老師朗讀與教室環境聲，可隨時關閉或調整音量。建議先將裝置音量調小。每個人的經驗都具有個別差異，這裡以情境討論可調整的環境與教學做法。</p>
         </aside>
       </div>
     </section>
@@ -104,8 +104,8 @@
             <div class="teacher-bubble"><span class="teacher-portrait" aria-hidden="true">師</span><div><div class="bubble-heading"><strong>老師說</strong><span id="teacherOrientation">站在講台前</span></div><p id="teacherCaption" aria-live="polite"></p></div></div>
           </div>
           <div class="workspace">
-            <div class="workspace-top"><div><span class="workspace-label">我的課本與練習</span><h2 id="workspaceHeading"></h2></div><div class="audio-controls"><button id="ambientToggle" class="audio-btn secondary-audio" type="button" aria-pressed="false">◉ 開啟教室環境聲</button><button id="audioBtn" class="audio-btn" type="button">♫ 播放老師語音</button></div></div>
-            <div id="experienceHint" class="experience-hint" aria-live="polite"></div>
+            <div class="workspace-top"><div><span class="workspace-label">我的課本與練習</span><h2 id="workspaceHeading"></h2></div><div class="audio-controls"><button id="ambientToggle" class="audio-btn secondary-audio" type="button" aria-pressed="false">◉ 開啟教室環境聲</button><button id="audioBtn" class="audio-btn" type="button">♫ 播放老師朗讀完整課文</button></div></div>
+            <div class="classroom-audio-panel"><span id="audioStatus" class="classroom-audio-status" role="status" aria-live="polite">選擇學生座位後，教室環境聲與老師語音會一起播放。</span><label class="ambient-slider-label" for="ambientVolume">教室音量 <input id="ambientVolume" type="range" min="0" max="100" step="5" value="80" aria-label="調整教室環境音量"><output id="ambientVolumeLabel" for="ambientVolume">80%</output></label></div><div id="experienceHint" class="experience-hint" aria-live="polite"></div>
             <section id="hearingPanel" class="hearing-panel" aria-labelledby="hearingPanelTitle" hidden>
               <div class="hearing-panel-header">
                 <div><span class="hearing-kicker">LISTENING IN A BUSY CLASSROOM</span><h3 id="hearingPanelTitle">聽見聲音，不一定聽懂指令</h3></div>

@@ -160,3 +160,31 @@ body{background:radial-gradient(ellipse 600px 440px at 95% 3%,rgba(180,231,212,.
 @media(max-width:850px){.diagnostic-grid{grid-template-columns:1fr}.diagnostic-main{width:calc(100% - 24px)}.diagnostic-hero,.diagnostic-help{padding:22px}}
 
 .backend-help-link{color:#657c76;font-size:.82rem;line-height:1.7;margin:10px 0}.backend-help-link a,.site-footer a{color:#0d736f;text-decoration:underline;font-weight:850}
+
+/* V7: 四位學生一致的教室音場與語音狀態 */
+.classroom-audio-panel{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 13px;margin:12px 0 13px;border-radius:12px;border:1px solid #c8e0d8;background:linear-gradient(90deg,#edf8f3,#f9fcfa)}
+.classroom-audio-status{font-size:.78rem;color:#285e59;line-height:1.7;flex:1}
+.ambient-slider-label{display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:.76rem;font-weight:800;color:#285f5a}
+.ambient-slider-label input{width:100px;accent-color:#13847a;cursor:pointer}
+.ambient-slider-label output{width:38px;text-align:right;font-size:.76rem;font-variant-numeric:tabular-nums}
+/* V7: 閱讀理解困難情境象徵性的文字跳動與短暫缺漏：保留可讀的無障礙語意。 */
+.effect-reading .reading-visual{display:inline;white-space:normal}
+.effect-reading .reading-glyph{display:inline-block;min-width:.4em;transform-origin:center center}
+.effect-reading .reading-glyph.reading-hop{animation:reading-hop-strong 1.45s ease-in-out var(--phase,0s) infinite}
+.effect-reading .reading-glyph.reading-vanish{animation:reading-vanish-strong 5.8s steps(1,end) var(--phase,0s) infinite}
+@keyframes reading-hop-strong{
+  0%,28%,70%,100%{transform:translate(0,0) rotate(0)}
+  36%{transform:translate(3px,-9px) rotate(-7deg)}
+  47%{transform:translate(-3px,7px) rotate(5deg)}
+  55%{transform:translate(2px,-4px) rotate(-3deg)}
+}
+@keyframes reading-vanish-strong{
+  0%,13%,36%,100%{opacity:1}
+  14%,35%{opacity:0}
+}
+/* 保留原稿的其他效果；停用動畫時字須完整恢復。 */
+.sim-effects-off .reading-glyph,.sim-effects-off .reading-glyph.reading-hop,.sim-effects-off .reading-glyph.reading-vanish{animation:none!important;transform:none!important;opacity:1!important}
+@media(prefers-reduced-motion:reduce){
+  .effect-reading .reading-glyph.reading-hop,.effect-reading .reading-glyph.reading-vanish{animation:none!important;transform:none!important;opacity:1!important}
+}
+@media(max-width:680px){.classroom-audio-panel{flex-direction:column;align-items:stretch}.ambient-slider-label{justify-content:space-between}.ambient-slider-label input{width:min(42vw,180px)}}
